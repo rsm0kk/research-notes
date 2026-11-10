@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RFHIC 투자 정리</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 레이아웃: 네이비 결론 밴드 → 회색 캔버스 위에 판단 순서대로 쌓은 그래프 카드 */
+:root{
+  --bg:#f3f6f9;--panel:#fff;--panel-2:#f7f9fc;--navy:#172b4d;--navy-ink:#fff;--navy-2:#c9d6ea;
+  --line:#d9e0e8;--line-soft:#e9edf2;--ink:#172033;--ink-2:#475467;--ink-3:#667085;
+  --accent:#175cd3;--accent-soft:#eaf2ff;--up:#b42318;--down:#175cd3;--warn-soft:#fff4e5;--warn:#93500a;
+  --s1:#0080a3;--s2:#7a4fd0;--s3:#c2570c;--neutral:#98a4b3;--neutral-soft:#c8d0da;
+  --shadow:0 10px 26px rgba(23,43,77,.07);
+  --sans:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1420;--panel:#16202f;--panel-2:#1b2739;--navy:#10233f;--navy-ink:#fff;--navy-2:#b9c9e0;
+  --line:#2c3d55;--line-soft:#1f2d40;--ink:#eaf1fa;--ink-2:#b3c3d6;--ink-3:#93a6bc;
+  --accent:#69b0ff;--accent-soft:rgba(105,176,255,.16);--up:#ff8a7a;--down:#69b0ff;--warn-soft:rgba(245,159,90,.14);--warn:#f6b67e;
+  --s1:#0f97a8;--s2:#a36bf0;--s3:#d07a1a;--neutral:#7c8ca0;--neutral-soft:#46566b;
+  --shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1420;--panel:#16202f;--panel-2:#1b2739;--navy:#10233f;--navy-ink:#fff;--navy-2:#b9c9e0;
+  --line:#2c3d55;--line-soft:#1f2d40;--ink:#eaf1fa;--ink-2:#b3c3d6;--ink-3:#93a6bc;
+  --accent:#69b0ff;--accent-soft:rgba(105,176,255,.16);--up:#ff8a7a;--down:#69b0ff;--warn-soft:rgba(245,159,90,.14);--warn:#f6b67e;
+  --s1:#0f97a8;--s2:#a36bf0;--s3:#d07a1a;--neutral:#7c8ca0;--neutral-soft:#46566b;
+  --shadow:none;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 var(--sans);word-break:keep-all;overflow-wrap:anywhere}
+a{color:var(--accent)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hero{background:var(--navy);color:var(--navy-ink);padding-block:26px 24px}
+.hero .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.eyebrow{font-size:13px;letter-spacing:.04em;color:var(--navy-2)}
+.hero h1{font-size:clamp(25px,4.4vw,36px);line-height:1.28;margin:12px 0 10px;text-wrap:balance}
+.hero p{margin:0;color:var(--navy-2);max-width:68ch}
+.btn{font:inherit;font-size:13px;min-height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:700}
+.hero .btn{background:transparent;color:var(--navy-ink);border-color:var(--navy-2);flex:none}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;margin-top:22px;background:rgba(255,255,255,.2);border-radius:10px;overflow:hidden}
+.tile{background:var(--navy);padding:12px 14px;min-width:0}
+.tile b{display:block;font:700 clamp(19px,2.6vw,25px)/1.25 var(--sans);font-variant-numeric:tabular-nums}
+.tile span{font-size:12.5px;color:var(--navy-2)}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;gap:4px;overflow-x:auto}
+.nav a{display:flex;align-items:center;min-height:44px;padding:0 11px;white-space:nowrap;color:var(--ink-2);text-decoration:none;font-size:14px}
+.nav a:hover{color:var(--accent)}
+main{padding-block:18px 40px;display:grid;gap:16px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow);min-width:0;scroll-margin-top:60px}
+h2{font-size:20px;line-height:1.38;margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;margin:0 0 2px}
+.lead{margin:0 0 14px;color:var(--ink-2);max-width:74ch}
+.grid2,.grid3{display:grid;gap:18px;min-width:0}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cell{min-width:0}
+.sub{font-size:12.5px;color:var(--ink-3);margin:0 0 6px}
+.chart{overflow-x:auto;min-height:60px}
+.chart svg{display:block;max-width:none}
+figure{margin:0;min-width:0}
+figcaption,.cap{font-size:13px;color:var(--ink-2);margin-top:8px}
+.src{font-size:12px;color:var(--ink-3);margin-top:6px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.legend .btn{display:inline-flex;align-items:center;gap:7px}
+.legend .btn[aria-pressed="false"]{opacity:.55;text-decoration:line-through}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.events{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-2)}
+.events b{color:var(--ink);font-variant-numeric:tabular-nums}
+.note{background:var(--warn-soft);border-radius:8px;padding:10px 12px;font-size:13.5px;color:var(--ink);margin-top:12px}
+.note b{color:var(--warn)}
+.list{margin:0;padding-left:20px}
+.list li{margin:7px 0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line-soft);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--ink-2);font-weight:600;padding:0}
+th button{all:unset;display:block;padding:8px 10px;cursor:pointer;width:100%;box-sizing:border-box}
+th button:focus-visible,.btn:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+tr.me td{background:var(--accent-soft);font-weight:700}
+.fix{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.fix>div{background:var(--panel-2);border-radius:8px;padding:12px 14px;font-size:14px;min-width:0}
+.fix b{display:block;margin-bottom:3px}
+#tip{position:fixed;z-index:30;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:12.5px;line-height:1.5;box-shadow:0 8px 22px rgba(10,20,40,.22);max-width:260px;font-variant-numeric:tabular-nums}
+#tip .h{font-weight:700;margin-bottom:2px}
+#tip .r{display:flex;align-items:center;gap:6px;justify-content:space-between}
+#tip .r>span:first-child{display:inline-flex;align-items:center;gap:6px}
+#tip .f{color:var(--ink-3);font-size:11.5px;margin-top:3px}
+.t{font:11px var(--sans);fill:var(--ink-3)}
+.t-b{font:700 11.5px var(--sans);fill:var(--ink)}
+.t-m{font:11px var(--sans);fill:var(--ink)}
+.t-v{font:700 11px var(--sans);fill:var(--ink);font-variant-numeric:tabular-nums}
+.t-w{font:700 10.5px var(--sans);fill:#fff}
+.grid{stroke:var(--line-soft)}
+.base{stroke:var(--neutral);stroke-width:1}
+.bar{fill:var(--neutral-soft)}
+.bar.now{fill:var(--s1)}
+.bar.est{fill:url(#hatch);stroke:var(--s1);stroke-width:1}
+.bar.alt{fill:var(--s2)}
+.bar.up{fill:var(--up)}
+.bar.down{fill:var(--down)}
+.bar.total{fill:var(--neutral)}
+.bar.hot{filter:brightness(.88)}
+.line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.area{stroke:none;opacity:.12}
+.c1{stroke:var(--s1);color:var(--s1)}.c2{stroke:var(--s2);color:var(--s2)}.c3{stroke:var(--s3);color:var(--s3)}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}
+.guide{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.evl{stroke:var(--neutral);stroke-width:1;stroke-dasharray:2 3}
+.evc{fill:var(--navy);stroke:var(--panel);stroke-width:1.5}
+.mark{stroke:var(--panel);stroke-width:2}
+.hit{fill:transparent;touch-action:pan-y;cursor:crosshair}
+.now-l{stroke:var(--up);stroke-width:1.5}
+.feb-l{stroke:var(--s3);stroke-width:1.5;stroke-dasharray:4 3}
+.dg-box{fill:var(--panel-2);stroke:var(--line);stroke-width:1}
+.dg-me{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.dg-ln{stroke:var(--ink-2);stroke-width:1.3;fill:none}
+.dg-t{font:10.5px var(--sans);fill:var(--ink)}
+.dg-b{font:700 11.5px var(--sans);fill:var(--ink)}
+.dg-a{font:10px var(--sans);fill:var(--ink-2)}
+.dg svg{display:block;width:100%;min-width:320px;max-width:560px;margin:0 auto;height:auto}
+.dg{overflow-x:auto}
+@media (max-width:860px){.grid3{grid-template-columns:minmax(0,1fr)}.grid2{grid-template-columns:minmax(0,1fr)}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile:first-child{grid-column:span 2}.fix{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:480px){section{padding:14px 12px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" style="fill:var(--panel)"/><rect width="2" height="5" style="fill:var(--s1)"/></pattern>
+<marker id="ar" viewBox="0 0 9 9" refX="8" refY="4.5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0.5 L9,4.5 L0,8.5 z" style="fill:var(--ink-2)"/></marker>
+</defs></svg>
+
+<header class="hero"><div class="wrap">
+  <div class="top"><div class="eyebrow">RFHIC 218410 · 코스닥 · 기준일 2026년 11월 10일</div><button class="btn" id="theme" type="button">다크 모드</button></div>
+  <h1>분할 편입은 가능, 확대는 레이시온 후속 수주를 본 뒤</h1>
+  <p>이익은 올랐고 주가는 섹터와 함께 내려왔습니다. 다만 3분기 이익률을 만든 해외 방산 계약 대부분이 2027년 2월에 끝나서, 다음 계약이 나와야 2027년 추정치가 유지됩니다.</p>
+  <div class="tiles" id="tiles"></div>
+</div></header>
+
+<nav class="nav" aria-label="목차"><div class="wrap">
+  <a href="#price">주가</a><a href="#sector">섹터 비교</a><a href="#earn">실적</a><a href="#source">이익 출처</a><a href="#orders">수주</a><a href="#value">밸류</a><a href="#spacex">스페이스X</a><a href="#risk">리스크</a><a href="#fix">바로잡은 것</a><a href="#data">자료</a>
+</div></nav>
+
+<main class="wrap">
+
+<section id="price">
+  <h2>고점 이후 주가는 62% 내렸고, 분기 영업이익은 77억에서 217억으로 늘었습니다</h2>
+  <p class="lead">내려간 것은 이익 전망이 아니라 시장이 쳐주는 배수입니다. 11/9에는 하루 14.1% 반등했습니다.</p>
+  <div class="controls" id="periods" role="group" aria-label="기간 선택"></div>
+  <figure>
+    <div class="chart" id="c-price" data-label="RFHIC 일별 종가 추이"></div>
+    <ul class="events" id="ev-list"></ul>
+    <p class="src">일별 정규장 종가(원). 출처: KIS 일별 스냅샷, 11/9는 다음금융. 매매 전 거래소·증권사 시세로 재확인 필요.</p>
+  </figure>
+</section>
+
+<section id="sector">
+  <h2>고점 이후 하락은 통신장비 업종과 거의 같은 폭이었습니다</h2>
+  <p class="lead">회사 고유의 악재 공시는 찾지 못했습니다. 5월 12일 이후 RFHIC가 업종보다 5%포인트쯤 더 빠졌지만, 그 전 상승폭도 더 컸습니다.</p>
+  <div class="controls" id="bases" role="group" aria-label="기준일 선택"></div>
+  <div class="legend" id="leg-idx"></div>
+  <figure>
+    <div class="chart" id="c-idx" data-label="RFHIC, 코스닥, 통신장비 4종 지수화 비교"></div>
+    <figcaption id="idx-cap"></figcaption>
+    <p class="src">기준일 종가 = 100. 통신장비 4종은 KMW·쏠리드·에치에프알·오이솔루션 동일가중(자체 계산). 11/6까지. 출처: KIS 일별 스냅샷, 업종 지수 캐시.</p>
+  </figure>
+</section>
+
+<section id="earn">
+  <h2>3분기 이익률 30.5%는 최고치이고, 4분기는 20% 안팎으로 내려갈 전망입니다</h2>
+  <p class="lead">4분기에는 수익성이 낮은 국내 방산(천궁2) 물량이 늘어납니다. 빗금은 증권사 추정이고, 매출은 유진 1,014억, 영업이익은 유진·KB 공통 210억입니다.</p>
+  <div class="grid3">
+    <div class="cell"><h3>매출</h3><p class="sub">억원, 분기</p><div class="chart" id="c-rev" data-label="분기 매출"></div></div>
+    <div class="cell"><h3>영업이익</h3><p class="sub">억원, 분기</p><div class="chart" id="c-op" data-label="분기 영업이익"></div></div>
+    <div class="cell"><h3>영업이익률</h3><p class="sub">%, 분기</p><div class="chart" id="c-opm" data-label="분기 영업이익률"></div></div>
+  </div>
+  <p class="src">연결 기준. 1Q23~2Q26은 DART 정기보고서, 3Q26은 10/27 잠정실적. 4Q26E는 유진(10/28)·KB(10/22) 추정 보도.</p>
+  <div style="height:14px"></div>
+  <div class="grid2">
+    <div class="cell"><h3>연간 영업이익 경로</h3><p class="sub">억원</p><div class="chart" id="c-year" data-label="연간 영업이익"></div></div>
+    <div class="cell" style="align-self:center"><p style="margin:0 0 8px">2027년 추정치 835억은 최근 4개 분기 영업이익 521억보다 <b>60% 많습니다.</b></p><p style="margin:0;color:var(--ink-2);font-size:14px">메리츠 추정은 824억으로 거의 같습니다. 2026년 추정은 갈립니다. 유진·KB의 4분기 210억을 쓰면 616억이고, 메리츠 전망 554억이면 4분기가 148억이라는 뜻입니다. 시장이 지금 의심하는 것은 이 숫자가 2월 이후에도 이어지느냐입니다.</p></div>
+  </div>
+</section>
+
+<section id="source">
+  <h2>상반기 이익 증가분의 70%는 자회사 RF머트리얼즈에서 나왔습니다</h2>
+  <p class="lead">3분기부터는 레이시온 물량으로 본체 비중이 다시 커졌지만, 연결 이익과 주주 몫은 다릅니다. 3분기 순이익 174억 중 지배주주 몫은 148억입니다.</p>
+  <div class="grid2">
+    <figure class="cell">
+      <h3>그룹 구조와 고객</h3><p class="sub">화살표 숫자는 보유 지분율</p>
+      <div class="dg"><svg viewBox="0 0 372 272" role="img" aria-label="RFHIC가 RF머트리얼즈와 RF시스템즈를 지배하고 각 회사가 방산, 광통신 고객에 공급한다">
+        <text class="t" x="137" y="14" text-anchor="middle">그룹사</text><text class="t" x="302" y="14" text-anchor="middle">주요 고객</text>
+        <rect class="dg-me" x="72" y="24" width="130" height="60" rx="8"/><text class="dg-b" x="137" y="42" text-anchor="middle">RFHIC 별도</text><text class="dg-t" x="137" y="58" text-anchor="middle">GaN 소자·증폭기</text><text class="dg-t" x="137" y="74" text-anchor="middle">상반기 영업익 107억</text>
+        <rect class="dg-box" x="72" y="112" width="130" height="60" rx="8"/><text class="dg-b" x="137" y="130" text-anchor="middle">RF머트리얼즈</text><text class="dg-t" x="137" y="146" text-anchor="middle">광·RF 패키지</text><text class="dg-t" x="137" y="162" text-anchor="middle">상반기 영업익 57억</text>
+        <rect class="dg-box" x="72" y="200" width="130" height="60" rx="8"/><text class="dg-b" x="137" y="218" text-anchor="middle">RF시스템즈</text><text class="dg-t" x="137" y="234" text-anchor="middle">레이더·안테나</text><text class="dg-t" x="137" y="250" text-anchor="middle">상반기 영업익 28억</text>
+        <rect class="dg-box" x="246" y="30" width="112" height="48" rx="8"/><text class="dg-t" x="302" y="50" text-anchor="middle">레이시온·콜린스</text><text class="dg-t" x="302" y="66" text-anchor="middle">LIG·삼성전자</text>
+        <rect class="dg-box" x="246" y="118" width="112" height="48" rx="8"/><text class="dg-t" x="302" y="138" text-anchor="middle">루멘텀</text><text class="dg-t" x="302" y="154" text-anchor="middle">펌프 레이저</text>
+        <rect class="dg-box" x="246" y="206" width="112" height="48" rx="8"/><text class="dg-t" x="302" y="226" text-anchor="middle">LIG D&amp;A</text><text class="dg-t" x="302" y="242" text-anchor="middle">방산 체계</text>
+        <path class="dg-ln" d="M204 54H244" marker-end="url(#ar)"/><text class="dg-a" x="224" y="47" text-anchor="middle">증폭기</text>
+        <path class="dg-ln" d="M204 142H244" marker-end="url(#ar)"/><text class="dg-a" x="224" y="135" text-anchor="middle">패키지</text>
+        <path class="dg-ln" d="M204 230H244" marker-end="url(#ar)"/><text class="dg-a" x="224" y="223" text-anchor="middle">안테나</text>
+        <path class="dg-ln" d="M137 85V110" marker-end="url(#ar)"/><text class="dg-a" x="145" y="101">41.5%</text>
+        <path class="dg-ln" d="M137 173V198" marker-end="url(#ar)"/><text class="dg-a" x="145" y="189">30.9%</text>
+        <path class="dg-ln" d="M71 54H52V230H70" marker-end="url(#ar)"/><text class="dg-a" x="14" y="146">13.2%</text>
+      </svg></div>
+      <figcaption>RF머트리얼즈 41.5%는 위임 의결권 5.22%를 뺀 보유 지분입니다. 지분이 100%가 아니라서 자회사 이익이 늘어도 EPS는 연결 이익만큼 늘지 않습니다. 영업이익은 내부거래 제거 전 법인별 수치입니다.</figcaption>
+    </figure>
+    <figure class="cell">
+      <h3>상반기 영업이익 증감</h3><p class="sub">1H25 → 1H26, 억원</p>
+      <div class="chart" id="c-wf" data-label="상반기 영업이익 증감 요인"></div>
+      <figcaption>RF머트리얼즈가 +48억으로 가장 크고, 본체는 +15억, 미국 법인은 7억 감소했습니다.</figcaption>
+      <p class="src">출처: 2026 반기보고서 연결 주석 34 영업부문.</p>
+    </figure>
+  </div>
+</section>
+
+<section id="orders">
+  <h2>공시된 주요 계약 3건, 709억이 2027년 2월에 끝납니다</h2>
+  <p class="lead">수주잔고는 납품이 몰린 분기 뒤에 줄고 큰 계약에 다시 뛰는 계단형입니다. 전년 동기보다 35% 많지만, 최근 한 분기 증가는 6%였습니다. 3분기 납품이 컸던 만큼 11월 중순 분기보고서의 잔고가 첫 확인 지점입니다.</p>
+  <div class="grid2">
+    <figure class="cell">
+      <h3>수주잔고</h3><p class="sub">억원, 각 보고서 제출일 현재</p>
+      <div class="chart" id="c-bl" data-label="수주잔고 추이"></div>
+      <figcaption>보라색 2Q26은 품목 구분 없는 총액으로 기재 방식이 바뀌었습니다. 이전 분기(레이더용 증폭기 잔고)와 정의가 달라, 실제 증가율은 6%보다 낮을 수 있습니다. 3Q26은 아직 제출되지 않았습니다.</figcaption>
+    </figure>
+    <figure class="cell">
+      <h3>2026년 공시 계약의 납품 기간</h3><p class="sub">막대에 올리면 금액과 기간</p>
+      <div class="chart" id="c-gantt" data-label="공시 계약의 계약 기간"></div>
+      <figcaption>레이시온 캐나다 건은 최초 506억에서 296억으로 정정됐고, 일부가 콜린스·레이시온 UK로 넘어갔습니다. 정정 이관분은 원화 공시가 없어 그림에서 뺐습니다.</figcaption>
+    </figure>
+  </div>
+  <p class="src">출처: DART 단일판매·공급계약(2/11, 3/27, 6/4, 6/19 정정), 각 사업·분기·반기보고서 수주상황.</p>
+</section>
+
+<section id="value">
+  <h2>2027년 이익 기준 16.6배, 현재가는 밸류 범위의 아래쪽입니다</h2>
+  <p class="lead">증권사 목표가는 주가 급락 전 수치가 많아 그대로 믿기 어렵습니다. 후속 수주로 이익이 확인될 때 20배 안팎, 약 51,000원을 현실적인 상단으로 봅니다.</p>
+  <figure>
+    <div class="chart" id="c-ff" data-label="밸류에이션 범위와 현재 주가"></div>
+    <figcaption>2027년 EPS는 약 2,550원을 썼습니다. 신한 PER 18.4배와 10/27 종가 46,900원에서 역산한 자체 계산이고, 영업이익 830억에 최근 지배순이익 비율 81%를 적용하면 2,530원으로 비슷합니다.</figcaption>
+  </figure>
+  <div style="height:16px"></div>
+  <h3>비교 기업</h3><p class="sub">막대 색이 진한 쪽이 RFHIC. 해외는 11/10 stockanalysis.com 조회값으로 참고용</p>
+  <div class="grid3">
+    <div class="cell"><h3>선행 PER</h3><p class="sub">배</p><div class="chart" id="c-per" data-label="선행 PER 비교"></div></div>
+    <div class="cell"><h3>EV/EBITDA</h3><p class="sub">배, 최근 12개월</p><div class="chart" id="c-ev" data-label="EV/EBITDA 비교"></div></div>
+    <div class="cell"><h3>영업이익률</h3><p class="sub">%, 최근 12개월</p><div class="chart" id="c-mg" data-label="영업이익률 비교"></div></div>
+  </div>
+  <p class="cap" id="ev-cap"></p>
+  <p class="cap">가장 비슷한 MACOM은 선행 23.5배, 모바일 비중이 큰 Qorvo·Skyworks는 14~15배입니다. RFHIC는 그 사이입니다. Mercury는 이익률 회복 초입이라 배수가 높게 나옵니다.</p>
+</section>
+
+<section id="spacex">
+  <h2>스페이스X 지상 5G망은 계약이 아니라 2028년 이후의 선택지입니다</h2>
+  <p class="lead">RFHIC와 스페이스X 사이에 계약이나 공시는 없습니다. 스페이스X가 미국에 자체 지상 이동통신망을 깔면 기지국마다 전력증폭기가 필요하고, RFHIC가 그 부품을 만들기 때문에 수혜 후보로 거론됩니다. 증권사 실적 추정치에도 들어가 있지 않습니다.</p>
+  <div class="grid2">
+    <figure class="cell">
+      <h3>RFHIC 부품이 들어갈 수 있는 두 경로</h3><p class="sub">점선은 증권사 전망일 뿐 확인된 공급이 아님</p>
+      <div class="dg"><svg viewBox="0 0 372 214" role="img" aria-label="RFHIC 증폭기가 스페이스X 지상망에 직접 또는 삼성전자·에릭슨을 거쳐 들어갈 수 있다는 두 가지 전망">
+        <rect class="dg-box" x="270" y="12" width="88" height="40" rx="8"/><text class="dg-b" x="314" y="29" text-anchor="middle">퀄컴</text><text class="dg-t" x="314" y="44" text-anchor="middle">기지국 칩</text>
+        <rect class="dg-me" x="16" y="84" width="88" height="44" rx="8"/><text class="dg-b" x="60" y="102" text-anchor="middle">RFHIC</text><text class="dg-t" x="60" y="118" text-anchor="middle">증폭기·소자</text>
+        <rect class="dg-box" x="270" y="84" width="88" height="44" rx="8"/><text class="dg-b" x="314" y="102" text-anchor="middle">스페이스X</text><text class="dg-t" x="314" y="118" text-anchor="middle">지상 5G망</text>
+        <rect class="dg-box" x="140" y="152" width="96" height="36" rx="8"/><text class="dg-t" x="188" y="174" text-anchor="middle">삼성·에릭슨</text>
+        <path class="dg-ln" d="M314 53V82" marker-end="url(#ar)"/><text class="dg-a" x="322" y="72">11/4 계약</text>
+        <path class="dg-ln" d="M106 106H268" marker-end="url(#ar)" style="stroke-dasharray:4 3"/><text class="dg-a" x="187" y="99" text-anchor="middle">직접 공급 (유진)</text>
+        <path class="dg-ln" d="M60 129V170H138" marker-end="url(#ar)" style="stroke-dasharray:4 3"/>
+        <path class="dg-ln" d="M237 170H314V130" marker-end="url(#ar)" style="stroke-dasharray:4 3"/><text class="dg-a" x="188" y="204" text-anchor="middle">간접 공급 (신한)</text>
+      </svg></div>
+      <figcaption>유진은 스페이스X가 스타링크처럼 기지국 하드웨어도 직접 설계할 가능성이 커서, 기존 대형 장비사를 거치지 않는 직접 공급 기회가 생긴다고 봤습니다. 신한은 통신사업자가 장비를 통합 시스템으로 사기 때문에 삼성전자·에릭슨을 거치는 간접 공급이 현실적이라고 봤습니다.</figcaption>
+    </figure>
+    <div class="cell">
+      <h3>지금까지 나온 것</h3>
+      <ul class="list">
+        <li><b>10/26</b> 스페이스X가 크라운캐슬 등과 미국 기지국 부지 최소 8만 곳 사용권을 협의 중이라는 외신 보도(KPI뉴스 인용, 외신 원문은 미확인)</li>
+        <li><b>10/28</b> 신한 리포트가 "2027년 스타링크 지상국 투자 시 통신 업황 회복"을 추정치 밖 기대 요인으로 언급</li>
+        <li><b>11/4</b> 스페이스X·퀄컴, 미국 지상 5G 기지국용 반도체·소프트웨어 공급계약 발표</li>
+        <li><b>11/8</b> 유진 보고서가 KMW·에치에프알·쏠리드·오이솔루션·RFHIC를 공급망 진입 후보로 거론</li>
+      </ul>
+      <h3 style="margin-top:12px">앞으로 볼 것</h3>
+      <ul class="list">
+        <li>기지국 하드웨어를 누가 설계·통합하는지(스페이스X 자체 또는 장비사)</li>
+        <li>장비사 선정은 2027년, 본격 공급은 2028년 이후 전망(KPI뉴스 인용 전문가)</li>
+        <li>하나증권 지적처럼 부지 임대가 곧바로 부품 발주로 이어지지는 않음</li>
+      </ul>
+    </div>
+  </div>
+  <p class="src">출처: <a href="https://v.daum.net/v/20261108090922400">아시아경제 11/8(유진)</a> · <a href="https://www.kpinews.kr">KPI뉴스 10/26(하나·신한)</a> · <a href="https://www.newsprime.co.kr/news/article/?no=752649">프라임경제 10/28(신한)</a>. 11/9 주가 14% 반등을 스페이스X 때문이라고 설명한 기사는 찾지 못했습니다.</p>
+</section>
+
+<section id="risk">
+  <h2>판단을 바꿀 조건</h2>
+  <div class="grid2">
+    <div class="cell"><h3>비중을 늘릴 신호</h3><ul class="list">
+      <li>미국 민간 공항 관제 레이더 등 레이시온 후속 수주 공시(KB는 연내 기대)</li>
+      <li>3분기 말 수주잔고 1,900억 이상 유지(11월 중순 분기보고서)</li>
+      <li>4분기 영업이익률 20% 이상</li>
+      <li>에릭슨 벤더 선정, 미국 주파수 경매 일정 확정</li>
+      <li>스페이스X 지상망 장비사 선정에서 RFHIC 부품 채택 확인</li>
+    </ul></div>
+    <div class="cell"><h3>논리가 깨지는 조건</h3><ul class="list">
+      <li>2027년 1분기까지 2월 종료 계약을 대체할 수주가 없음</li>
+      <li>2027년 영업이익 추정치가 800억 아래로 하향</li>
+      <li>재고 1,399억(작년 말 887억)이 매출로 전환되지 않음</li>
+      <li>통신 회복 지연. 에릭슨 본격화는 2028년 전망(KB)</li>
+    </ul></div>
+  </div>
+  <div style="height:14px"></div>
+  <h3>IR에 물어볼 것</h3>
+  <ul class="list">
+    <li>3분기 방산 매출 508억 중 해외 비중과 그 물량의 이익률은?</li>
+    <li>3분기 말 잔고 중 2027년 2월 이후 납기 물량은 얼마인가?</li>
+    <li>재고 구성(원재료·재공품)과 연말 목표 수준은?</li>
+    <li>반도체 장비 부품(Microwave Generator) 양산 고객과 2027년 매출 규모는?</li>
+  </ul>
+</section>
+
+<section id="fix">
+  <h2>원문 대조에서 바로잡은 것</h2>
+  <div class="fix">
+    <div><b>"레이시온향 500억원대"는 정정 전 숫자</b>6/19 정정으로 Raytheon Canada 몫은 296억입니다. 콜린스 USD 9.52M, 레이시온 UK USD 3.62M로 이관됐고 세 건 합계는 원계약보다 USD 1.41M 적습니다.</div>
+    <div><b>11/9 대량보유 보고는 매도가 아님</b>최대주주 측 지분 33.10%는 그대로입니다. 증여세 연부연납 담보가 42.6만 주에서 58.2만 주로 늘어난 보고입니다.</div>
+    <div><b>"별도 이익률 2분기 35%"는 추정치</b>신한 추정입니다. 반기보고서상 별도 법인 상반기 영업이익률은 19.8%로, 분기별 수치는 공시되지 않습니다.</div>
+    <div><b>현금 감소는 자금 유출이 아님</b>현금은 1,099억에서 304억으로 줄었지만 단기금융상품 순증이 860억입니다. 6월 말 순현금은 약 1,445억입니다(장기 금융자산 제외).</div>
+  </div>
+  <div class="note"><b>주의한 수치.</b> 조선비즈 기사의 "전 거래일 종가 45,450원"은 실제 10/27 종가 46,900원과 다릅니다. 그래서 EPS 역산에는 46,900원을 썼습니다.</div>
+</section>
+
+<section id="data">
+  <h2>자료</h2>
+  <div class="controls"><button class="btn" id="csv-q" type="button">분기 실적 CSV 복사</button><button class="btn" id="csv-p" type="button">비교 기업 CSV 복사</button></div>
+  <div class="tw"><table id="t-q"></table></div>
+  <div style="height:14px"></div>
+  <div class="tw"><table id="t-p"></table></div>
+  <div style="height:14px"></div>
+  <div class="tw"><table id="t-b"></table></div>
+  <p class="cap">증권사 의견은 리포트 PDF가 아니라 보도 기사로 확인했습니다. 외국계 리포트는 확인 가능한 원문이 없었습니다. 메리츠 2026년 전망치는 재가공 블로그로만 확인했습니다. 해외 비교 기업은 공시 원문과 대조하지 않았고, 선행 PER의 회계연도는 RFHIC 2027년과 정확히 일치하지 않습니다.</p>
+  <h3 style="margin-top:14px">원문</h3>
+  <ul class="list" style="font-size:13.5px">
+    <li>DART: <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261027900110">3분기 잠정실적</a> · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814001022">2026 반기보고서</a> · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260619901012">Raytheon 정정</a> · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260604900601">Collins</a> · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260327902001">LIG넥스원</a> · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260211900977">포스텍</a> · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261109000173">대량보유 11/9</a></li>
+    <li>증권사 보도: <a href="https://v.daum.net/v/20261028090921081">신한</a> · <a href="https://v.daum.net/v/20261028075232119">유진</a> · <a href="https://v.daum.net/v/20261028070121093">메리츠</a> · <a href="https://v.daum.net/v/20261023082403699">하나</a> · <a href="https://www.newsfc.co.kr/news/articleView.html?idxno=81871">KB</a></li>
+    <li>비교 기업: <a href="https://stockanalysis.com/stocks/mtsi/statistics/">MACOM</a> · <a href="https://stockanalysis.com/stocks/qrvo/statistics/">Qorvo</a> · <a href="https://stockanalysis.com/stocks/swks/statistics/">Skyworks</a> · <a href="https://stockanalysis.com/stocks/mrcy/statistics/">Mercury</a></li>
+  </ul>
+  <p class="src">투자 판단 참고용 자료이며 매수·매도 권유가 아닙니다. 수치는 2026-11-10 기준입니다.</p>
+</section>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const DATA={"px":42450,"high":112500,"mcap":11282.186955,"eps":2550,"q":[{"q":"1Q23","rev":307.77,"op":14.63,"ni":45.38},{"q":"2Q23","rev":242.94,"op":-52.31,"ni":-43.22},{"q":"3Q23","rev":200.41,"op":-44.15,"ni":-21.8},{"q":"4Q23","rev":363.2,"op":84.86,"ni":194.01},{"q":"1Q24","rev":255.63,"op":4.02,"ni":220.16},{"q":"2Q24","rev":260.74,"op":-2.11,"ni":28.01},{"q":"3Q24","rev":245.85,"op":-11.24,"ni":16.91},{"q":"4Q24","rev":386.53,"op":24.63,"ni":-8.48},{"q":"1Q25","rev":318.74,"op":37.35,"ni":39.08},{"q":"2Q25","rev":446.39,"op":83.05,"ni":70.8},{"q":"3Q25","rev":404.97,"op":73.63,"ni":56.69},{"q":"4Q25","rev":687.94,"op":114.86,"ni":120},{"q":"1Q26","rev":430.7,"op":77.38,"ni":67.08},{"q":"2Q26","rev":515.01,"op":111.86,"ni":87.96},{"q":"3Q26","rev":710.79,"op":216.71,"ni":147.81},{"q":"4Q26E","rev":1014,"op":210,"ni":null,"est":true}],"years":[{"y":"2023","op":3.0302427900000026},{"y":"2024","op":15.29788265},{"y":"2025","op":308.89493523},{"y":"2026E","op":615.95140257,"est":true,"note":"1~9월 실적 406억 + 4분기 추정 210억(유진·KB), 자체 합산"},{"y":"2027E","op":835,"est":true,"note":"유진 10/28. 메리츠는 824억"}],"px0":[{"138080":9620,"230240":17910,"d":"20250702","p":26600,"v":284823,"rf":26600,"kq":782.17,"032500":12960,"050890":6970},{"138080":9730,"230240":17910,"d":"20250703","p":25900,"v":343204,"rf":25900,"kq":793.33,"032500":13170,"050890":7020},{"138080":9950,"230240":18000,"d":"20250704","p":25500,"v":204618,"rf":25500,"kq":775.8,"032500":13860,"050890":7030},{"138080":9880,"230240":17880,"d":"20250707","p":25650,"v":163271,"rf":25650,"kq":778.46,"032500":13300,"050890":6900},{"138080":9790,"230240":17700,"d":"20250708","p":26300,"v":254003,"rf":26300,"kq":784.24,"032500":13450,"050890":6940},{"138080":10100,"230240":18350,"d":"20250709","p":27200,"v":294165,"rf":27200,"kq":790.36,"032500":14540,"050890":7160},{"138080":10090,"230240":18430,"d":"20250710","p":27050,"v":179719,"rf":27050,"kq":797.7,"032500":14590,"050890":7070},{"138080":10050,"230240":18420,"d":"20250711","p":27100,"v":192616,"rf":27100,"kq":800.47,"032500":14070,"050890":7000},{"138080":9710,"230240":17580,"d":"20250714","p":26800,"v":196068,"rf":26800,"kq":799.37,"032500":13710,"050890":6870},{"138080":9820,"230240":17290,"d":"20250715","p":27550,"v":244292,"rf":27550,"kq":812.88,"032500":13630,"050890":6900},{"138080":9820,"230240":16720,"d":"20250716","p":28300,"v":358661,"rf":28300,"kq":812.23,"032500":14150,"050890":6830},{"138080":10070,"230240":16490,"d":"20250717","p":28650,"v":188045,"rf":28650,"kq":818.27,"032500":14860,"050890":6980},{"138080":10000,"230240":16520,"d":"20250718","p":28500,"v":234943,"rf":28500,"kq":820.67,"032500":15090,"050890":6960},{"138080":10000,"230240":16770,"d":"20250721","p":27700,"v":256789,"rf":27700,"kq":821.69,"032500":14830,"050890":6950},{"138080":9980,"230240":16900,"d":"20250722","p":27750,"v":231440,"rf":27750,"kq":812.97,"032500":14180,"050890":6740},{"138080":9920,"230240":16530,"d":"20250723","p":28000,"v":214268,"rf":28000,"kq":813.56,"032500":14320,"050890":6650},{"138080":9850,"230240":16210,"d":"20250724","p":28550,"v":236605,"rf":28550,"kq":809.89,"032500":14210,"050890":6560},{"138080":9770,"230240":16220,"d":"20250725","p":27900,"v":96664,"rf":27900,"kq":806.95,"032500":13970,"050890":6510},{"138080":9960,"230240":16110,"d":"20250728","p":29700,"v":835415,"rf":29700,"kq":804.4,"032500":14100,"050890":6460},{"138080":9870,"230240":16050,"d":"20250729","p":26800,"v":722950,"rf":26800,"kq":804.45,"032500":13150,"050890":6330},{"138080":9880,"230240":16180,"d":"20250730","p":27700,"v":369039,"rf":27700,"kq":803.67,"032500":13280,"050890":6300},{"138080":9920,"230240":15960,"d":"20250731","p":27850,"v":172914,"rf":27850,"kq":805.24,"032500":13210,"050890":6300},{"138080":9830,"230240":15600,"d":"20250801","p":26900,"v":348774,"rf":26900,"kq":772.79,"032500":13080,"050890":6200},{"138080":9720,"230240":15970,"d":"20250804","p":27900,"v":256606,"rf":27900,"kq":784.06,"032500":13510,"050890":6390},{"138080":9700,"230240":15840,"d":"20250805","p":28150,"v":162498,"rf":28150,"kq":798.6,"032500":13200,"050890":6390},{"138080":9700,"230240":15750,"d":"20250806","p":27850,"v":165255,"rf":27850,"kq":803.49,"032500":13160,"050890":6580},{"138080":9720,"230240":15750,"d":"20250807","p":28450,"v":144204,"rf":28450,"kq":805.81,"032500":13020,"050890":6530},{"138080":9720,"230240":15720,"d":"20250808","p":27150,"v":189470,"rf":27150,"kq":809.27,"032500":12780,"050890":6480},{"138080":9600,"230240":15670,"d":"20250811","p":26550,"v":186508,"rf":26550,"kq":811.85,"032500":12720,"050890":6410},{"138080":9570,"230240":15520,"d":"20250812","p":26100,"v":175049,"rf":26100,"kq":807.19,"032500":12320,"050890":6300},{"138080":9800,"230240":16540,"d":"20250813","p":26400,"v":151193,"rf":26400,"kq":814.1,"032500":12210,"050890":6330},{"138080":9730,"230240":16830,"d":"20250814","p":27300,"v":137918,"rf":27300,"kq":815.26,"032500":12050,"050890":6370},{"138080":9660,"230240":16770,"d":"20250818","p":27550,"v":113047,"rf":27550,"kq":798.05,"032500":12020,"050890":6430},{"138080":9420,"230240":16430,"d":"20250819","p":24950,"v":398533,"rf":24950,"kq":787.96,"032500":11490,"050890":6410},{"138080":9100,"230240":16390,"d":"20250820","p":24000,"v":366853,"rf":24000,"kq":777.61,"032500":11430,"050890":6250},{"138080":9080,"230240":16620,"d":"20250821","p":24550,"v":162022,"rf":24550,"kq":777.24,"032500":11640,"050890":6400},{"138080":9270,"230240":16170,"d":"20250822","p":24850,"v":110712,"rf":24850,"kq":782.51,"032500":12180,"050890":6440},{"138080":9460,"230240":16370,"d":"20250825","p":25400,"v":100244,"rf":25400,"kq":798.02,"032500":12380,"050890":6450},{"138080":9460,"230240":16750,"d":"20250826","p":25700,"v":105134,"rf":25700,"kq":801.66,"032500":12230,"050890":6500},{"138080":9570,"230240":16740,"d":"20250827","p":25600,"v":143477,"rf":25600,"kq":801.72,"032500":12390,"050890":6520},{"138080":9540,"230240":16580,"d":"20250828","p":25700,"v":103960,"rf":25700,"kq":798.43,"032500":12450,"050890":6450},{"138080":9400,"230240":16020,"d":"20250829","p":26300,"v":135259,"rf":26300,"kq":796.91,"032500":12450,"050890":6360},{"138080":9260,"230240":16190,"d":"20250901","p":25050,"v":137113,"rf":25050,"kq":785,"032500":12000,"050890":6250},{"138080":9250,"230240":16220,"d":"20250902","p":24950,"v":147142,"rf":24950,"kq":794,"032500":12140,"050890":6170},{"138080":9260,"230240":16080,"d":"20250903","p":25150,"v":129529,"rf":25150,"kq":796.81,"032500":12150,"050890":6140},{"138080":9370,"230240":16070,"d":"20250904","p":25550,"v":136080,"rf":25550,"kq":805.42,"032500":12270,"050890":6310},{"138080":9820,"230240":17610,"d":"20250905","p":27700,"v":364524,"rf":27700,"kq":811.4,"032500":13340,"050890":6550},{"138080":10350,"230240":17960,"d":"20250908","p":28700,"v":338238,"rf":28700,"kq":818.6,"032500":13820,"050890":6620},{"138080":10300,"230240":18070,"d":"20250909","p":28350,"v":168193,"rf":28350,"kq":824.82,"032500":13390,"050890":6650},{"138080":10140,"230240":17760,"d":"20250910","p":28450,"v":136274,"rf":28450,"kq":833,"032500":13380,"050890":6640},{"138080":10840,"230240":17210,"d":"20250911","p":29550,"v":323253,"rf":29550,"kq":834.76,"032500":13320,"050890":6710},{"138080":11090,"230240":17500,"d":"20250912","p":30600,"v":380214,"rf":30600,"kq":847.08,"032500":13800,"050890":6810},{"138080":10990,"230240":16300,"d":"20250915","p":30250,"v":258507,"rf":30250,"kq":852.69,"032500":13840,"050890":6780},{"138080":10900,"230240":16170,"d":"20250916","p":31950,"v":578309,"rf":31950,"kq":851.84,"032500":13690,"050890":6810},{"138080":10940,"230240":16170,"d":"20250917","p":32200,"v":219568,"rf":32200,"kq":845.53,"032500":13500,"050890":6780},{"138080":10930,"230240":16410,"d":"20250918","p":31850,"v":152235,"rf":31850,"kq":857.11,"032500":12740,"050890":6850},{"138080":10890,"230240":16180,"d":"20250919","p":32050,"v":104664,"rf":32050,"kq":863.11,"032500":12590,"050890":6940},{"138080":10810,"230240":15470,"d":"20250922","p":32150,"v":113598,"rf":32150,"kq":874.36,"032500":12640,"050890":6830},{"138080":10710,"230240":15360,"d":"20250923","p":32150,"v":190742,"rf":32150,"kq":872.21,"032500":12480,"050890":6730},{"138080":10640,"230240":15230,"d":"20250924","p":31450,"v":194338,"rf":31450,"kq":860.94,"032500":12330,"050890":6730},{"138080":10620,"230240":15180,"d":"20250925","p":30850,"v":141219,"rf":30850,"kq":852.48,"032500":12020,"050890":6540},{"138080":10110,"230240":14770,"d":"20250926","p":29300,"v":258352,"rf":29300,"kq":835.19,"032500":11620,"050890":6300},{"138080":10180,"230240":15020,"d":"20250929","p":29250,"v":112670,"rf":29250,"kq":846.71,"032500":11540,"050890":6300},{"138080":10150,"230240":14880,"d":"20250930","p":29700,"v":101558,"rf":29700,"kq":841.99,"032500":11740,"050890":6260},{"138080":10140,"230240":15000,"d":"20251001","p":29000,"v":99810,"rf":29000,"kq":845.34,"032500":11760,"050890":6360},{"138080":10070,"230240":15070,"d":"20251002","p":28900,"v":131052,"rf":28900,"kq":854.25,"032500":11800,"050890":6370},{"138080":12150,"230240":15340,"d":"20251010","p":28800,"v":142480,"rf":28800,"kq":859.49,"032500":12490,"050890":7290},{"138080":14100,"230240":15440,"d":"20251013","p":28500,"v":102443,"rf":28500,"kq":860.49,"032500":12480,"050890":7250},{"138080":13550,"230240":15240,"d":"20251014","p":27900,"v":144956,"rf":27900,"kq":847.96,"032500":12000,"050890":6970},{"138080":14470,"230240":18160,"d":"20251015","p":31800,"v":434277,"rf":31800,"kq":864.72,"032500":13530,"050890":7240},{"138080":14070,"230240":17390,"d":"20251016","p":30850,"v":182853,"rf":30850,"kq":865.41,"032500":13720,"050890":7130},{"138080":12820,"230240":15470,"d":"20251017","p":28050,"v":284399,"rf":28050,"kq":859.54,"032500":13130,"050890":6790},{"138080":12700,"230240":15590,"d":"20251020","p":27550,"v":170328,"rf":27550,"kq":875.77,"032500":12920,"050890":6730},{"138080":13410,"230240":15940,"d":"20251021","p":27300,"v":164267,"rf":27300,"kq":872.5,"032500":13590,"050890":6800},{"138080":13540,"230240":16010,"d":"20251022","p":27500,"v":123464,"rf":27500,"kq":879.15,"032500":13590,"050890":6920},{"138080":13100,"230240":15600,"d":"20251023","p":27550,"v":107976,"rf":27550,"kq":872.03,"032500":13180,"050890":7040},{"138080":12890,"230240":15770,"d":"20251024","p":27000,"v":138915,"rf":27000,"kq":883.08,"032500":13210,"050890":7030},{"138080":12990,"230240":16030,"d":"20251027","p":27550,"v":181430,"rf":27550,"kq":902.7,"032500":13450,"050890":7090},{"138080":13700,"230240":17060,"d":"20251028","p":27950,"v":193106,"rf":27950,"kq":903.3,"032500":14660,"050890":7280},{"138080":14830,"230240":17400,"d":"20251029","p":34150,"v":2601827,"rf":34150,"kq":901.59,"032500":17210,"050890":8890},{"138080":15030,"230240":18110,"d":"20251030","p":35750,"v":954430,"rf":35750,"kq":890.86,"032500":18700,"050890":8670},{"138080":14500,"230240":17190,"d":"20251031","p":33400,"v":453068,"rf":33400,"kq":900.42,"032500":17010,"050890":8060},{"138080":14220,"230240":17920,"d":"20251103","p":36300,"v":721204,"rf":36300,"kq":914.55,"032500":17990,"050890":8300},{"138080":13780,"230240":17500,"d":"20251104","p":36750,"v":371483,"rf":36750,"kq":926.57,"032500":18000,"050890":8490},{"138080":13540,"230240":17440,"d":"20251105","p":34050,"v":483740,"rf":34050,"kq":901.89,"032500":17660,"050890":8560},{"138080":12880,"230240":16320,"d":"20251106","p":33250,"v":324758,"rf":33250,"kq":898.17,"032500":16920,"050890":7830},{"138080":12800,"230240":15690,"d":"20251107","p":34000,"v":430554,"rf":34000,"kq":876.81,"032500":15960,"050890":7620},{"138080":13050,"230240":16790,"d":"20251110","p":33400,"v":165298,"rf":33400,"kq":888.35,"032500":16170,"050890":7850},{"138080":13040,"230240":16960,"d":"20251111","p":33250,"v":352789,"rf":33250,"kq":884.27,"032500":16480,"050890":8030},{"138080":13080,"230240":17320,"d":"20251112","p":32700,"v":329394,"rf":32700,"kq":906.51,"032500":16050,"050890":7800},{"138080":13090,"230240":17000,"d":"20251113","p":31850,"v":251707,"rf":31850,"kq":918.37,"032500":15630,"050890":7690},{"138080":11690,"230240":15970,"d":"20251114","p":30400,"v":259662,"rf":30400,"kq":897.9,"032500":15000,"050890":7300},{"138080":11790,"230240":15480,"d":"20251117","p":30500,"v":158201,"rf":30500,"kq":902.67,"032500":14890,"050890":7500},{"138080":11540,"230240":14710,"d":"20251118","p":28500,"v":404259,"rf":28500,"kq":878.7,"032500":14750,"050890":7110},{"138080":11310,"230240":14690,"d":"20251119","p":28150,"v":204345,"rf":28150,"kq":871.32,"032500":14670,"050890":7180},{"138080":11790,"230240":14990,"d":"20251120","p":28450,"v":162561,"rf":28450,"kq":891.94,"032500":15140,"050890":7280},{"138080":11330,"230240":14720,"d":"20251121","p":27300,"v":262304,"rf":27300,"kq":863.95,"032500":14440,"050890":7130},{"138080":11160,"230240":14220,"d":"20251124","p":26300,"v":224624,"rf":26300,"kq":856.44,"032500":14120,"050890":6970},{"138080":11570,"230240":13820,"d":"20251125","p":25950,"v":318726,"rf":25950,"kq":856.03,"032500":14470,"050890":7170},{"138080":11790,"230240":13150,"d":"20251126","p":26300,"v":168204,"rf":26300,"kq":877.32,"032500":14800,"050890":7350},{"138080":12090,"230240":12680,"d":"20251127","p":26550,"v":228886,"rf":26550,"kq":880.06,"032500":14920,"050890":7280},{"138080":12400,"230240":12830,"d":"20251128","p":27450,"v":207758,"rf":27450,"kq":912.67,"032500":15110,"050890":7510},{"138080":12280,"230240":12540,"d":"20251201","p":28150,"v":200849,"rf":28150,"kq":922.38,"032500":14920,"050890":7660},{"138080":12340,"230240":12690,"d":"20251202","p":29200,"v":163228,"rf":29200,"kq":928.42,"032500":15100,"050890":7790},{"138080":13170,"230240":12800,"d":"20251203","p":30050,"v":182518,"rf":30050,"kq":932.01,"032500":15660,"050890":8030},{"138080":12700,"230240":12490,"d":"20251204","p":30450,"v":236428,"rf":30450,"kq":929.83,"032500":15650,"050890":8250},{"138080":12650,"230240":12530,"d":"20251205","p":30550,"v":132211,"rf":30550,"kq":924.74,"032500":15130,"050890":8030},{"138080":12820,"230240":12770,"d":"20251208","p":29700,"v":184771,"rf":29700,"kq":927.79,"032500":14890,"050890":7850},{"138080":12600,"230240":12490,"d":"20251209","p":29550,"v":121745,"rf":29550,"kq":931.35,"032500":14710,"050890":7710},{"138080":12760,"230240":12300,"d":"20251210","p":31800,"v":600186,"rf":31800,"kq":935,"032500":15610,"050890":8200},{"138080":14090,"230240":11920,"d":"20251211","p":31150,"v":260322,"rf":31150,"kq":934.64,"032500":15630,"050890":7960},{"138080":14390,"230240":12430,"d":"20251212","p":32400,"v":201741,"rf":32400,"kq":937.34,"032500":15850,"050890":7970},{"138080":15020,"230240":12560,"d":"20251215","p":32350,"v":216721,"rf":32350,"kq":938.83,"032500":16000,"050890":8000},{"138080":13900,"230240":12240,"d":"20251216","p":31400,"v":184276,"rf":31400,"kq":916.11,"032500":15230,"050890":7790},{"138080":13500,"230240":12040,"d":"20251217","p":31700,"v":142444,"rf":31700,"kq":911.07,"032500":15380,"050890":7770},{"138080":13230,"230240":11870,"d":"20251218","p":30750,"v":87008,"rf":30750,"kq":901.33,"032500":15300,"050890":7560},{"138080":13350,"230240":12040,"d":"20251219","p":31850,"v":157218,"rf":31850,"kq":915.27,"032500":15740,"050890":7780},{"138080":14970,"230240":13650,"d":"20251222","p":36200,"v":788328,"rf":36200,"kq":929.14,"032500":16400,"050890":8340},{"138080":13900,"230240":12940,"d":"20251223","p":33750,"v":531576,"rf":33750,"kq":919.56,"032500":15030,"050890":7750},{"138080":13850,"230240":12070,"d":"20251224","p":33600,"v":240029,"rf":33600,"kq":915.2,"032500":15130,"050890":7600},{"138080":13430,"230240":11850,"d":"20251226","p":33550,"v":310762,"rf":33550,"kq":919.67,"032500":15200,"050890":7520},{"138080":13290,"230240":11600,"d":"20251229","p":32900,"v":211292,"rf":32900,"kq":932.59,"032500":15150,"050890":7660},{"138080":13090,"230240":11580,"d":"20251230","p":32650,"v":149938,"rf":32650,"kq":925.47,"032500":14400,"050890":7370},{"138080":15320,"230240":13430,"d":"20260102","p":35050,"v":380109,"rf":35050,"kq":945.57,"032500":15810,"050890":7820},{"138080":16290,"230240":13280,"d":"20260105","p":35600,"v":236087,"rf":35600,"kq":957.5,"032500":15930,"050890":7800},{"138080":15820,"230240":13760,"d":"20260106","p":37500,"v":637745,"rf":37500,"kq":955.97,"032500":15860,"050890":7790},{"138080":15740,"230240":14460,"d":"20260107","p":37400,"v":459821,"rf":37400,"kq":947.39,"032500":15240,"050890":7510},{"138080":15370,"230240":14010,"d":"20260108","p":38000,"v":389190,"rf":38000,"kq":944.06,"032500":14820,"050890":7160},{"138080":15220,"230240":13570,"d":"20260109","p":37850,"v":220686,"rf":37850,"kq":947.92,"032500":14790,"050890":7320},{"138080":14920,"230240":13590,"d":"20260112","p":37600,"v":289888,"rf":37600,"kq":949.81,"032500":14570,"050890":7260},{"138080":14430,"230240":12990,"d":"20260113","p":37150,"v":311106,"rf":37150,"kq":948.98,"032500":14780,"050890":7290},{"138080":15030,"230240":12630,"d":"20260114","p":37400,"v":180803,"rf":37400,"kq":942.18,"032500":14560,"050890":7240},{"138080":15020,"230240":12590,"d":"20260115","p":36600,"v":307522,"rf":36600,"kq":951.16,"032500":14610,"050890":7250},{"138080":14680,"230240":12320,"d":"20260116","p":35100,"v":235390,"rf":35100,"kq":954.59,"032500":14370,"050890":7280},{"138080":15200,"230240":12180,"d":"20260119","p":34100,"v":308829,"rf":34100,"kq":968.36,"032500":14390,"050890":7330},{"138080":15400,"230240":12600,"d":"20260120","p":34800,"v":256158,"rf":34800,"kq":976.37,"032500":15320,"050890":7530},{"138080":15560,"230240":12710,"d":"20260121","p":34450,"v":290280,"rf":34450,"kq":951.29,"032500":15460,"050890":7550},{"138080":15840,"230240":12980,"d":"20260122","p":34500,"v":479759,"rf":34500,"kq":970.35,"032500":15420,"050890":7580},{"138080":16140,"230240":13660,"d":"20260123","p":34950,"v":245778,"rf":34950,"kq":993.93,"032500":15770,"050890":7730},{"138080":16340,"230240":14120,"d":"20260126","p":38850,"v":1107267,"rf":38850,"kq":1064.41,"032500":17100,"050890":7910},{"138080":15730,"230240":14010,"d":"20260127","p":41800,"v":1204838,"rf":41800,"kq":1082.59,"032500":17640,"050890":8000},{"138080":16450,"230240":14540,"d":"20260128","p":44550,"v":688786,"rf":44550,"kq":1133.52,"032500":18530,"050890":8260},{"138080":16930,"230240":14840,"d":"20260129","p":49350,"v":1172658,"rf":49350,"kq":1164.41,"032500":18830,"050890":8800},{"138080":16710,"230240":13810,"d":"20260130","p":47850,"v":542030,"rf":47850,"kq":1149.44,"032500":18920,"050890":8500},{"138080":16330,"230240":13630,"d":"20260202","p":48100,"v":636310,"rf":48100,"kq":1098.36,"032500":18070,"050890":8320},{"138080":16960,"230240":13800,"d":"20260203","p":50600,"v":433415,"rf":50600,"kq":1144.33,"032500":19020,"050890":8630},{"138080":16980,"230240":14980,"d":"20260204","p":48000,"v":444156,"rf":48000,"kq":1149.43,"032500":18860,"050890":8740},{"138080":16300,"230240":15900,"d":"20260205","p":46050,"v":421741,"rf":46050,"kq":1108.41,"032500":18500,"050890":8580},{"138080":16040,"230240":16120,"d":"20260206","p":46100,"v":381464,"rf":46100,"kq":1080.77,"032500":18400,"050890":9380},{"138080":16780,"230240":16670,"d":"20260209","p":49100,"v":446308,"rf":49100,"kq":1127.55,"032500":19200,"050890":9400},{"138080":16360,"230240":15960,"d":"20260210","p":47000,"v":244625,"rf":47000,"kq":1115.2,"032500":18550,"050890":9050},{"138080":16620,"230240":16700,"d":"20260211","p":49150,"v":468656,"rf":49150,"kq":1114.87,"032500":18590,"050890":9150},{"138080":16610,"230240":16660,"d":"20260212","p":50600,"v":259157,"rf":50600,"kq":1125.99,"032500":18390,"050890":9270},{"138080":16930,"230240":16180,"d":"20260213","p":50300,"v":310141,"rf":50300,"kq":1106.08,"032500":18380,"050890":9110},{"138080":18290,"230240":17580,"d":"20260219","p":58900,"v":1362510,"rf":58900,"kq":1160.71,"032500":20650,"050890":9440},{"138080":18740,"230240":17140,"d":"20260220","p":63200,"v":758690,"rf":63200,"kq":1154,"032500":20950,"050890":9550},{"138080":19610,"230240":16830,"d":"20260223","p":59000,"v":431153,"rf":59000,"kq":1151.99,"032500":19750,"050890":8850},{"138080":19390,"230240":16500,"d":"20260224","p":57700,"v":287895,"rf":57700,"kq":1165,"032500":19060,"050890":8390},{"138080":19150,"230240":16040,"d":"20260225","p":56800,"v":331215,"rf":56800,"kq":1165.25,"032500":19050,"050890":8350},{"138080":19990,"230240":18570,"d":"20260226","p":57300,"v":374109,"rf":57300,"kq":1188.15,"032500":18910,"050890":8390},{"138080":19650,"230240":17280,"d":"20260227","p":56800,"v":238134,"rf":56800,"kq":1192.78,"032500":18700,"050890":8410},{"138080":21450,"230240":17240,"d":"20260303","p":63800,"v":1278165,"rf":63800,"kq":1137.7,"032500":17940,"050890":7900},{"138080":17500,"230240":14910,"d":"20260304","p":57000,"v":1466575,"rf":57000,"kq":978.44,"032500":15260,"050890":7000},{"138080":20450,"230240":16670,"d":"20260305","p":67200,"v":822357,"rf":67200,"kq":1116.41,"032500":17200,"050890":7880},{"138080":22150,"230240":17000,"d":"20260306","p":71500,"v":583983,"rf":71500,"kq":1154.67,"032500":18100,"050890":8280},{"138080":19860,"230240":15200,"d":"20260309","p":63200,"v":806089,"rf":63200,"kq":1102.28,"032500":16780,"050890":7910},{"138080":25400,"230240":16350,"d":"20260310","p":74700,"v":1678532,"rf":74700,"kq":1137.68,"032500":19030,"050890":9010},{"138080":30650,"230240":21250,"d":"20260311","p":89600,"v":2862118,"rf":89600,"kq":1136.83,"032500":24700,"050890":11710},{"138080":32050,"230240":27600,"d":"20260312","p":84100,"v":1484012,"rf":84100,"kq":1148.4,"032500":26150,"050890":12400},{"138080":35850,"230240":28550,"d":"20260313","p":84800,"v":875415,"rf":84800,"kq":1152.96,"032500":26400,"050890":12750},{"138080":34150,"230240":27150,"d":"20260316","p":79200,"v":693581,"rf":79200,"kq":1138.29,"032500":26000,"050890":12340},{"138080":32900,"230240":25500,"d":"20260317","p":77900,"v":489091,"rf":77900,"kq":1136.94,"032500":28750,"050890":12650},{"138080":31650,"230240":25500,"d":"20260318","p":78300,"v":425335,"rf":78300,"kq":1164.38,"032500":28850,"050890":13220},{"138080":31600,"230240":25500,"d":"20260319","p":78700,"v":441599,"rf":78700,"kq":1143.48,"032500":29200,"050890":12900},{"138080":33900,"230240":27000,"d":"20260320","p":80900,"v":627443,"rf":80900,"kq":1161.52,"032500":32950,"050890":13120},{"138080":31600,"230240":26050,"d":"20260323","p":73600,"v":375164,"rf":73600,"kq":1096.89,"032500":28200,"050890":12370},{"138080":34100,"230240":26500,"d":"20260324","p":76400,"v":283183,"rf":76400,"kq":1121.44,"032500":28800,"050890":13320},{"138080":41600,"230240":30350,"d":"20260325","p":88600,"v":1370086,"rf":88600,"kq":1159.55,"032500":33200,"050890":15910},{"138080":39950,"230240":29450,"d":"20260326","p":81100,"v":598732,"rf":81100,"kq":1136.64,"032500":29200,"050890":14340},{"138080":39750,"230240":31550,"d":"20260327","p":82400,"v":468794,"rf":82400,"kq":1141.51,"032500":29450,"050890":14070},{"138080":36600,"230240":28350,"d":"20260330","p":78700,"v":330061,"rf":78700,"kq":1107.05,"032500":27250,"050890":13440},{"138080":33000,"230240":27600,"d":"20260331","p":75000,"v":773978,"rf":75000,"kq":1052.39,"032500":25450,"050890":12630},{"138080":42500,"230240":33700,"d":"20260401","p":94200,"v":1627917,"rf":94200,"kq":1116.18,"032500":29200,"050890":14570},{"138080":43000,"230240":33950,"d":"20260402","p":86400,"v":1225723,"rf":86400,"kq":1056.34,"032500":27600,"050890":15070},{"138080":42150,"230240":33900,"d":"20260403","p":89000,"v":756106,"rf":89000,"kq":1063.75,"032500":28500,"050890":16300},{"138080":44000,"230240":31400,"d":"20260406","p":84500,"v":548880,"rf":84500,"kq":1047.37,"032500":27400,"050890":15640},{"138080":39350,"230240":28500,"d":"20260407","p":82800,"v":298219,"rf":82800,"kq":1036.73,"032500":26350,"050890":14420},{"138080":39450,"230240":27850,"d":"20260408","p":85100,"v":589540,"rf":85100,"kq":1089.85,"032500":26550,"050890":15100},{"138080":39500,"230240":26000,"d":"20260409","p":85800,"v":505753,"rf":85800,"kq":1076,"032500":24750,"050890":14220},{"138080":41500,"230240":29850,"d":"20260410","p":91900,"v":990887,"rf":91900,"kq":1093.63,"032500":26900,"050890":17080},{"138080":42850,"230240":30850,"d":"20260413","p":93800,"v":638965,"rf":93800,"kq":1099.84,"032500":27750,"050890":17350},{"138080":44250,"230240":30400,"d":"20260414","p":95700,"v":578356,"rf":95700,"kq":1121.88,"032500":28450,"050890":16880},{"138080":43850,"230240":30100,"d":"20260415","p":96600,"v":543991,"rf":96600,"kq":1152.43,"032500":34100,"050890":18160},{"138080":42350,"230240":30450,"d":"20260416","p":93400,"v":489695,"rf":93400,"kq":1162.97,"032500":30100,"050890":16670},{"138080":44600,"230240":30800,"d":"20260417","p":93300,"v":313380,"rf":93300,"kq":1170.04,"032500":30800,"050890":16870},{"138080":45900,"230240":30750,"d":"20260420","p":100800,"v":772493,"rf":100800,"kq":1174.85,"032500":30400,"050890":17070},{"138080":46200,"230240":29200,"d":"20260421","p":99500,"v":370703,"rf":99500,"kq":1179.03,"032500":30800,"050890":16580},{"138080":47700,"230240":29500,"d":"20260422","p":105500,"v":598661,"rf":105500,"kq":1181.12,"032500":31350,"050890":16670},{"138080":47000,"230240":28050,"d":"20260423","p":100100,"v":446417,"rf":100100,"kq":1174.31,"032500":30550,"050890":16470},{"138080":41900,"230240":28000,"d":"20260424","p":100200,"v":290890,"rf":100200,"kq":1203.84,"032500":29550,"050890":16430},{"138080":40200,"230240":26950,"d":"20260427","p":93100,"v":878536,"rf":93100,"kq":1226.18,"032500":29950,"050890":16780},{"138080":37600,"230240":25200,"d":"20260428","p":87800,"v":777249,"rf":87800,"kq":1215.58,"032500":28550,"050890":15930},{"138080":38000,"230240":29150,"d":"20260429","p":91600,"v":424961,"rf":91600,"kq":1220.26,"032500":29750,"050890":16070},{"138080":38700,"230240":29500,"d":"20260430","p":94300,"v":423540,"rf":94300,"kq":1192.35,"032500":29750,"050890":17110},{"138080":45050,"230240":36600,"d":"20260504","p":98000,"v":596904,"rf":98000,"kq":1213.74,"032500":31650,"050890":18640},{"138080":44600,"230240":35750,"d":"20260506","p":96400,"v":508475,"rf":96400,"kq":1210.17,"032500":30750,"050890":18440},{"138080":54000,"230240":37950,"d":"20260507","p":100800,"v":814252,"rf":100800,"kq":1199.18,"032500":32650,"050890":18850},{"138080":53300,"230240":38050,"d":"20260508","p":99700,"v":471797,"rf":99700,"kq":1207.72,"032500":33900,"050890":18200},{"138080":51800,"230240":36850,"d":"20260511","p":104000,"v":524650,"rf":104000,"kq":1207.34,"032500":35150,"050890":18150},{"138080":48750,"230240":36050,"d":"20260512","p":112500,"v":1730124,"rf":112500,"kq":1179.29,"032500":34550,"050890":17400},{"138080":49000,"230240":33950,"d":"20260513","p":105300,"v":736665,"rf":105300,"kq":1176.93,"032500":33500,"050890":16650},{"138080":46100,"230240":32800,"d":"20260514","p":108800,"v":489012,"rf":108800,"kq":1191.09,"032500":32500,"050890":16260},{"138080":40950,"230240":31700,"d":"20260515","p":97100,"v":640457,"rf":97100,"kq":1129.82,"032500":30500,"050890":15600},{"138080":37650,"230240":29050,"d":"20260518","p":96800,"v":304672,"rf":96800,"kq":1111.09,"032500":28900,"050890":15400},{"138080":36100,"230240":28700,"d":"20260519","p":93900,"v":385176,"rf":93900,"kq":1084.36,"032500":31950,"050890":15130},{"138080":36600,"230240":30450,"d":"20260520","p":91900,"v":286764,"rf":91900,"kq":1056.07,"032500":30350,"050890":14790},{"138080":38200,"230240":30250,"d":"20260521","p":99100,"v":357160,"rf":99100,"kq":1105.97,"032500":31900,"050890":15740},{"138080":40650,"230240":32700,"d":"20260522","p":104000,"v":540180,"rf":104000,"kq":1161.13,"032500":36400,"050890":18130},{"138080":41250,"230240":34500,"d":"20260526","p":103200,"v":382186,"rf":103200,"kq":1172.52,"032500":35600,"050890":18340},{"138080":39200,"230240":32900,"d":"20260527","p":99000,"v":413705,"rf":99000,"kq":1133.13,"032500":35700,"050890":17150},{"138080":34750,"230240":29400,"d":"20260528","p":93100,"v":502091,"rf":93100,"kq":1104.36,"032500":31200,"050890":15870},{"138080":34750,"230240":31850,"d":"20260529","p":90100,"v":773989,"rf":90100,"kq":1074.8,"032500":33350,"050890":16000},{"138080":34350,"230240":31100,"d":"20260601","p":87600,"v":572776,"rf":87600,"kq":1050.03,"032500":32700,"050890":15200},{"138080":34500,"230240":30950,"d":"20260602","p":82400,"v":480541,"rf":82400,"kq":1026.03,"032500":35000,"050890":14410},{"138080":39400,"230240":34000,"d":"20260604","p":90900,"v":565934,"rf":90900,"kq":1049.73,"032500":38200,"050890":14990},{"138080":34500,"230240":28950,"d":"20260605","p":82800,"v":412499,"rf":82800,"kq":1002.44,"032500":32800,"050890":13510},{"138080":31000,"230240":25350,"d":"20260608","p":75700,"v":365159,"rf":75700,"kq":911.39,"032500":29700,"050890":12550},{"138080":32800,"230240":25350,"d":"20260609","p":77600,"v":346657,"rf":77600,"kq":967.81,"032500":30250,"050890":13290},{"138080":29200,"230240":23050,"d":"20260610","p":72800,"v":550166,"rf":72800,"kq":951.63,"032500":26450,"050890":12150},{"138080":30600,"230240":24500,"d":"20260611","p":74900,"v":326747,"rf":74900,"kq":996.93,"032500":26500,"050890":12420},{"138080":32600,"230240":26400,"d":"20260612","p":77000,"v":473480,"rf":77000,"kq":1029.05,"032500":27650,"050890":12790},{"138080":31550,"230240":27600,"d":"20260615","p":79700,"v":212157,"rf":79700,"kq":1034.03,"032500":28400,"050890":12970},{"138080":31450,"230240":25850,"d":"20260616","p":82800,"v":392729,"rf":82800,"kq":1018.68,"032500":26700,"050890":12810},{"138080":30250,"230240":26650,"d":"20260617","p":78000,"v":281435,"rf":78000,"kq":1031.96,"032500":25750,"050890":12830},{"138080":28750,"230240":24600,"d":"20260618","p":75000,"v":267142,"rf":75000,"kq":1000.93,"032500":24350,"050890":12370},{"138080":27600,"230240":23000,"d":"20260619","p":73100,"v":297235,"rf":73100,"kq":966.59,"032500":23450,"050890":11830},{"138080":27850,"230240":23000,"d":"20260622","p":73500,"v":209762,"rf":73500,"kq":968.4,"032500":22950,"050890":11600},{"138080":26100,"230240":20400,"d":"20260623","p":65800,"v":347371,"rf":65800,"kq":891.52,"032500":20600,"050890":11230},{"138080":27250,"230240":20050,"d":"20260624","p":68100,"v":263604,"rf":68100,"kq":909.31,"032500":20850,"050890":11210},{"138080":25750,"230240":19200,"d":"20260625","p":65000,"v":263842,"rf":65000,"kq":887.81,"032500":19410,"050890":11000},{"138080":24250,"230240":18280,"d":"20260626","p":60600,"v":295402,"rf":60600,"kq":851.37,"032500":18070,"050890":10700},{"138080":25700,"230240":19580,"d":"20260629","p":63600,"v":225751,"rf":63600,"kq":920.57,"032500":19460,"050890":11190},{"138080":25000,"230240":19670,"d":"20260630","p":63200,"v":119742,"rf":63200,"kq":916.18,"032500":18990,"050890":10900},{"138080":25950,"230240":19160,"d":"20260701","p":64500,"v":157089,"rf":64500,"kq":929.35,"032500":18830,"050890":11280},{"138080":23450,"230240":17290,"d":"20260702","p":56200,"v":271420,"rf":56200,"kq":866.72,"032500":17530,"050890":10480},{"138080":23850,"230240":17410,"d":"20260703","p":57800,"v":274859,"rf":57800,"kq":868.41,"032500":17160,"050890":10780},{"138080":22100,"230240":17340,"d":"20260706","p":57900,"v":245190,"rf":57900,"kq":847.07,"032500":16240,"050890":10250},{"138080":21300,"230240":16370,"d":"20260707","p":54900,"v":387922,"rf":54900,"kq":831.23,"032500":16000,"050890":9930},{"138080":20100,"230240":15800,"d":"20260708","p":49400,"v":385916,"rf":49400,"kq":785,"032500":15110,"050890":9490},{"138080":20250,"230240":15580,"d":"20260709","p":49000,"v":296973,"rf":49000,"kq":794,"032500":15120,"050890":9710},{"138080":22700,"230240":18000,"d":"20260710","p":52100,"v":727496,"rf":52100,"kq":837.43,"032500":17560,"050890":10680},{"138080":20300,"230240":17150,"d":"20260713","p":47150,"v":283257,"rf":47150,"kq":799.36,"032500":15700,"050890":9550},{"138080":19550,"230240":15890,"d":"20260714","p":44750,"v":432704,"rf":44750,"kq":783.98,"032500":14960,"050890":9430},{"138080":21600,"230240":17520,"d":"20260715","p":51200,"v":314679,"rf":51200,"kq":829.43,"032500":16430,"050890":9970},{"138080":19450,"230240":16820,"d":"20260716","p":46250,"v":177519,"rf":46250,"kq":791.84,"032500":15080,"050890":9440},{"138080":17960,"230240":15520,"d":"20260720","p":41950,"v":185016,"rf":41950,"kq":749.64,"032500":13890,"050890":8870},{"138080":18330,"230240":15400,"d":"20260721","p":43550,"v":192185,"rf":43550,"kq":753.34,"032500":14150,"050890":8990},{"138080":18420,"230240":16220,"d":"20260722","p":44950,"v":256741,"rf":44950,"kq":751.09,"032500":14710,"050890":9100},{"138080":19960,"230240":17180,"d":"20260723","p":48200,"v":287195,"rf":48200,"kq":790.28,"032500":16880,"050890":9610},{"138080":18690,"230240":16200,"d":"20260724","p":45050,"v":229883,"rf":45050,"kq":748.22,"032500":15290,"050890":9100},{"138080":18390,"230240":16370,"d":"20260727","p":45450,"v":163979,"rf":45450,"kq":764.86,"032500":15680,"050890":9270},{"138080":16010,"230240":14210,"d":"20260728","p":40000,"v":245102,"rf":40000,"kq":705.85,"032500":14550,"050890":8470},{"138080":14170,"230240":12450,"d":"20260729","p":37050,"v":401668,"rf":37050,"kq":662.68,"032500":13300,"050890":7730},{"138080":13300,"230240":11960,"d":"20260730","p":35300,"v":240091,"rf":35300,"kq":644.78,"032500":12360,"050890":7410},{"138080":15700,"230240":14340,"d":"20260731","p":42700,"v":337256,"rf":42700,"kq":719.76,"032500":14320,"050890":8470},{"138080":17520,"230240":14710,"d":"20260803","p":43400,"v":206773,"rf":43400,"kq":737.35,"032500":15050,"050890":8910},{"138080":19370,"230240":15330,"d":"20260804","p":48750,"v":440018,"rf":48750,"kq":780.72,"032500":16250,"050890":9630},{"138080":25150,"230240":16100,"d":"20260805","p":52300,"v":1107371,"rf":52300,"kq":799.59,"032500":17090,"050890":10070},{"138080":22400,"230240":15610,"d":"20260806","p":49400,"v":438340,"rf":49400,"kq":801.67,"032500":16610,"050890":9940},{"138080":26550,"230240":15210,"d":"20260807","p":48450,"v":467005,"rf":48450,"kq":798.81,"032500":16560,"050890":9830},{"138080":27800,"230240":16250,"d":"20260810","p":54400,"v":704274,"rf":54400,"kq":854.47,"032500":17900,"050890":10340},{"138080":25350,"230240":15590,"d":"20260811","p":52100,"v":624923,"rf":52100,"kq":857.84,"032500":17200,"050890":10080},{"138080":24350,"230240":16000,"d":"20260812","p":54000,"v":370750,"rf":54000,"kq":858.91,"032500":17090,"050890":10250},{"138080":24750,"230240":16000,"d":"20260813","p":54300,"v":418818,"rf":54300,"kq":861.37,"032500":17370,"050890":10400},{"138080":23600,"230240":15510,"d":"20260814","p":53200,"v":257577,"rf":53200,"kq":864.65,"032500":17240,"050890":10360},{"138080":22300,"230240":14600,"d":"20260818","p":51000,"v":319249,"rf":51000,"kq":834.2,"032500":15950,"050890":9690},{"138080":22350,"230240":13980,"d":"20260819","p":49550,"v":283870,"rf":49550,"kq":824.46,"032500":15270,"050890":9360},{"138080":23800,"230240":14220,"d":"20260820","p":50100,"v":234346,"rf":50100,"kq":840.89,"032500":15500,"050890":9500},{"138080":23400,"230240":13200,"d":"20260821","p":47150,"v":224069,"rf":47150,"kq":801.94,"032500":15010,"050890":9040},{"138080":23600,"230240":13030,"d":"20260824","p":46200,"v":210892,"rf":46200,"kq":813.33,"032500":14660,"050890":9060},{"138080":23250,"230240":13250,"d":"20260825","p":46950,"v":217418,"rf":46950,"kq":827.15,"032500":14540,"050890":9150},{"138080":23600,"230240":13320,"d":"20260826","p":47500,"v":225132,"rf":47500,"kq":826.87,"032500":14440,"050890":9070},{"138080":24950,"230240":13660,"d":"20260827","p":48800,"v":214934,"rf":48800,"kq":837.65,"032500":15360,"050890":9320},{"138080":23400,"230240":12860,"d":"20260828","p":46800,"v":245967,"rf":46800,"kq":838.41,"032500":14660,"050890":8900},{"138080":23300,"230240":12890,"d":"20260831","p":46900,"v":167168,"rf":46900,"kq":834.29,"032500":15210,"050890":8880},{"138080":22500,"230240":12380,"d":"20260901","p":45000,"v":235712,"rf":45000,"kq":821.25,"032500":14620,"050890":8860},{"138080":21500,"230240":12130,"d":"20260902","p":47500,"v":737328,"rf":47500,"kq":803.98,"032500":14390,"050890":8670},{"138080":20400,"230240":11650,"d":"20260903","p":46400,"v":329426,"rf":46400,"kq":790.21,"032500":14170,"050890":8360},{"138080":21300,"230240":11940,"d":"20260904","p":48300,"v":270170,"rf":48300,"kq":813.5,"032500":14650,"050890":8520},{"138080":21400,"230240":11980,"d":"20260907","p":48450,"v":297208,"rf":48450,"kq":822.19,"032500":14730,"050890":8400},{"138080":21100,"230240":11600,"d":"20260908","p":47400,"v":495770,"rf":47400,"kq":811.88,"032500":14680,"050890":8230},{"138080":24000,"230240":11870,"d":"20260909","p":49700,"v":717421,"rf":49700,"kq":830.37,"032500":15350,"050890":8470},{"138080":23850,"230240":12040,"d":"20260910","p":51400,"v":1332386,"rf":51400,"kq":836.92,"032500":15770,"050890":8880},{"138080":23500,"230240":11600,"d":"20260911","p":48800,"v":459659,"rf":48800,"kq":820.64,"032500":15450,"050890":8600},{"138080":23050,"230240":11400,"d":"20260914","p":49600,"v":420104,"rf":49600,"kq":806.79,"032500":16110,"050890":8620},{"138080":23650,"230240":11410,"d":"20260915","p":49350,"v":236436,"rf":49350,"kq":812.41,"032500":16070,"050890":8750},{"138080":25800,"230240":12500,"d":"20260916","p":52700,"v":1040764,"rf":52700,"kq":815.98,"032500":18000,"050890":9110},{"138080":27000,"230240":12700,"d":"20260917","p":53400,"v":584402,"rf":53400,"kq":822.18,"032500":18180,"050890":9340},{"138080":27450,"230240":13640,"d":"20260918","p":60100,"v":1841551,"rf":60100,"kq":827.12,"032500":19440,"050890":9760},{"138080":27250,"230240":13060,"d":"20260921","p":59700,"v":1132088,"rf":59700,"kq":836.27,"032500":19150,"050890":9290},{"138080":28300,"230240":13690,"d":"20260922","p":59000,"v":582477,"rf":59000,"kq":834.38,"032500":19510,"050890":9500},{"138080":28350,"230240":13810,"d":"20260923","p":58600,"v":310613,"rf":58600,"kq":844.48,"032500":19560,"050890":9530},{"138080":27700,"230240":13630,"d":"20260928","p":57300,"v":280246,"rf":57300,"kq":846.58,"032500":18890,"050890":9550},{"138080":28100,"230240":13480,"d":"20260929","p":57800,"v":269201,"rf":57800,"kq":849.8,"032500":18800,"050890":9490},{"138080":28450,"230240":13450,"d":"20260930","p":58500,"v":250045,"rf":58500,"kq":855.91,"032500":18800,"050890":9510},{"138080":29700,"230240":13830,"d":"20261001","p":60000,"v":279172,"rf":60000,"kq":894.29,"032500":19440,"050890":10000},{"138080":32450,"230240":14360,"d":"20261002","p":62000,"v":772381,"rf":62000,"kq":893.29,"032500":21100,"050890":10600},{"138080":32950,"230240":14250,"d":"20261006","p":62400,"v":396258,"rf":62400,"kq":919.92,"032500":20900,"050890":10580},{"138080":31600,"230240":13900,"d":"20261007","p":58900,"v":436868,"rf":58900,"kq":898.43,"032500":20000,"050890":10100},{"138080":30750,"230240":13350,"d":"20261008","p":58500,"v":288276,"rf":58500,"kq":892.27,"032500":19820,"050890":9860},{"138080":30950,"230240":12440,"d":"20261012","p":57300,"v":357183,"rf":57300,"kq":849.19,"032500":18750,"050890":9550},{"138080":29050,"230240":11850,"d":"20261013","p":53700,"v":412402,"rf":53700,"kq":837.03,"032500":18440,"050890":9080},{"138080":28550,"230240":11640,"d":"20261014","p":55300,"v":395178,"rf":55300,"kq":823.88,"032500":18450,"050890":8980},{"138080":24700,"230240":10420,"d":"20261015","p":47550,"v":450513,"rf":47550,"kq":760.82,"032500":17110,"050890":8060},{"138080":27250,"230240":10430,"d":"20261016","p":50300,"v":243870,"rf":50300,"kq":794.78,"032500":17620,"050890":8350},{"138080":29150,"230240":10630,"d":"20261019","p":52100,"v":215586,"rf":52100,"kq":808.89,"032500":18650,"050890":8590},{"138080":28100,"230240":10210,"d":"20261020","p":47450,"v":272796,"rf":47450,"kq":781.97,"032500":18400,"050890":8270},{"138080":28450,"230240":10060,"d":"20261021","p":47650,"v":265262,"rf":47650,"kq":792.76,"032500":18210,"050890":8520},{"138080":25700,"230240":9820,"d":"20261022","p":47200,"v":304789,"rf":47200,"kq":764.1,"032500":18000,"050890":8380},{"138080":25300,"230240":9440,"d":"20261023","p":45350,"v":304391,"rf":45350,"kq":751.69,"032500":18100,"050890":8220},{"138080":24000,"230240":9160,"d":"20261026","p":47150,"v":440219,"rf":47150,"kq":727.21,"032500":17920,"050890":8090},{"138080":24050,"230240":9390,"d":"20261027","p":46900,"v":1354456,"rf":46900,"kq":743.83,"032500":17560,"050890":8130},{"138080":25600,"230240":9940,"d":"20261028","p":51500,"v":796366,"rf":51500,"kq":771.28,"032500":17740,"050890":8450},{"138080":25700,"230240":10080,"d":"20261029","p":51800,"v":512703,"rf":51800,"kq":753.23,"032500":18760,"050890":8320},{"138080":23350,"230240":9660,"d":"20261030","p":49500,"v":533401,"rf":49500,"kq":724.38,"032500":17300,"050890":7950},{"138080":25550,"230240":10680,"d":"20261102","p":52000,"v":267732,"rf":52000,"kq":734.36,"032500":17930,"050890":8250},{"138080":23100,"230240":10430,"d":"20261103","p":46950,"v":296504,"rf":46950,"kq":704.39,"032500":16560,"050890":7850},{"138080":24100,"230240":10330,"d":"20261104","p":47950,"v":299930,"rf":47950,"kq":714.95,"032500":17320,"050890":8130},{"138080":21300,"230240":9670,"d":"20261105","p":40100,"v":472340,"rf":40100,"kq":678.41,"032500":16270,"050890":7680},{"138080":19670,"230240":9270,"d":"20261106","p":37200,"v":348225,"rf":37200,"kq":644.27,"032500":15700,"050890":7280},{"d":"20261109","p":42450,"v":931258,"rf":null,"kq":null}],"peers":["032500","050890","230240","138080"],"events":[{"d":"20260126","n":"1","t":"1/26 4Q25 실적"},{"d":"20260427","n":"2","t":"4/27 1Q26 실적"},{"d":"20260512","n":"3","t":"5/12 종가 고점 112,500원"},{"d":"20260727","n":"4","t":"7/27 2Q26 실적"},{"d":"20261027","n":"5","t":"10/27 3Q26 실적"},{"d":"20261105","n":"6","t":"11/5~6 시장 급락(이틀 −22%)"}],"backlog":[{"q":"1Q23","v":339.5,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"2Q23","v":418.4,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"3Q23","v":391.4,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"4Q23","v":335.6,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"1Q24","v":367.1,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"2Q24","v":662,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"3Q24","v":594.2,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"4Q24","v":521.2,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"1Q25","v":764.7,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"2Q25","v":1482.1,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"3Q25","v":1376.5,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"4Q25","v":1074.7,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"1Q26","v":1881.3,"def":"레이더용 GaN 전력증폭기 잔고"},{"q":"2Q26","v":1994.8,"def":"품목 구분 없는 총액으로 기재 변경"}],"wf":[{"n":"1H25","a":0,"b":120.41,"total":true},{"n":"RF머트리얼즈","a":120.41,"b":168.27,"note":"9.1억 → 57.0억"},{"n":"RFHIC 별도","a":168.27,"b":182.84,"note":"92.7억 → 107.2억"},{"n":"RF시스템즈","a":182.84,"b":191.98,"note":"18.7억 → 27.9억"},{"n":"미국 법인","a":191.98,"b":184.49,"note":"1.4억 → −6.1억"},{"n":"조정·기타","a":184.49,"b":189.24,"note":"연결 조정과 유럽 법인 합산"},{"n":"1H26","a":0,"b":189.24,"total":true}],"ff":{"rows":[{"n":"최근 1년 종가","a":25950,"b":112500,"note":"2025-11-25 최저, 2026-05-12 최고"},{"n":"PER 15~25배","a":38250,"b":63750,"mid":51000,"c":"now","note":"2027년 EPS 2,550원 적용, 가운데 점이 20배"},{"n":"Peer 배수","a":37485,"b":59925,"c":"alt","note":"Qorvo 14.7배 ~ MACOM 23.5배 적용"},{"n":"목표가 3사","a":72000,"b":83000,"note":"유진 72,000 · 신한 81,000 · 메리츠 83,000"},{"n":"하나 목표가","a":150000,"b":150000,"note":"하나증권 10/23 언급, 150,000원"}]},"contracts":[{"n":"Raytheon","full":"Raytheon Canada Limited","amt":296.4,"usd":"USD 20.53M","start":"2026-02-13","end":"2027-02-01","item":"고출력 전력증폭기","disc":"2/19, 6/19 정정"},{"n":"LIG넥스원","full":"엘아이지넥스원(주)","amt":192.3,"start":"2026-03-26","end":"2027-02-24","item":"MFR AESA용 핵심모듈","disc":"3/27"},{"n":"Collins","full":"Collins Aerospace","amt":220.5,"usd":"USD 14.55M","start":"2026-06-02","end":"2027-02-26","item":"고출력 전력증폭기","disc":"6/4"},{"n":"포스텍","full":"포항공과대학교 가속기연구소","amt":186.6,"start":"2026-02-11","end":"2029-12-31","item":"다목적방사광가속기용 SSPA","disc":"2/11"}],"peers2":[{"n":"RFHIC","s":"RFHIC","me":true,"cap":"11,282억원","capN":8.058704967857143,"per":16.647058823529413,"ev":17.49731564233094,"psr":4.812298318106486,"opm":22.214591697114635,"fit":"기준"},{"n":"MACOM (MTSI)","s":"MACOM","cap":"175.7억달러","capN":17570,"per":23.47,"ev":46.25,"psr":13.15,"opm":23.09,"fit":"GaN RF·방산·데이터센터 광부품, 가장 유사"},{"n":"Qorvo (QRVO)","s":"Qorvo","cap":"100.7억달러","capN":10070,"per":14.74,"ev":11.67,"psr":2.78,"opm":17.57,"fit":"GaN 방산·기지국 있으나 모바일 중심"},{"n":"Skyworks (SWKS)","s":"Skyworks","cap":"124.6억달러","capN":12460,"per":14.51,"ev":15.06,"psr":3.15,"opm":9,"fit":"RF 반도체, 모바일 중심, 방산 없음"},{"n":"Mercury (MRCY)","s":"Mercury","cap":"47.9억달러","capN":4790,"per":47.65,"ev":63.33,"psr":4.87,"opm":0.76,"fit":"방산 전자 모듈, 이익률 회복 초입"},{"n":"웨이비스","s":"웨이비스","cap":"848억원(11/6)","capN":61,"per":null,"ev":null,"psr":2.167689161554192,"opm":null,"fit":"국내 GaN RF 동종, 영업 적자"}],"brokers":[{"n":"하나","d":"10/23","tp":150000,"t":"미국 기지국 투자, 2027년 주파수 경매"},{"n":"메리츠","d":"10/26","tp":83000,"t":"소자·패키지·시스템 수직계열화, 2027E 영업이익 824억"},{"n":"신한","d":"10/28","tp":81000,"t":"2~3년 고성장, 업종 최선호"},{"n":"유진","d":"10/28","tp":72000,"t":"4Q 영업이익 210억, 2027E 835억"}],"evNote":"RFHIC EV 10,646억 = 시가총액 11,282억 + 비지배지분 809억(장부가) − 순현금 1,445억(6월 말 현금 304억 + 단기금융자산 1,403억 − 차입금·리스 263억). 장기 금융자산 1,124억은 구성을 확인하지 않아 뺐습니다. EBITDA 608억은 최근 4개 분기 영업이익 521억에 상반기 감가상각비 43.8억의 2배를 더한 자체 추정입니다."};
+const NS='http://www.w3.org/2000/svg';
+const S=(t,a,p,tx)=>{const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);if(tx!=null)e.textContent=tx;if(p)p.appendChild(e);return e};
+const $=id=>document.getElementById(id);
+const num=(v,d=0)=>v.toLocaleString('ko-KR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sgn=(v,d=1)=>(v>0?'+':v<0?'−':'')+num(Math.abs(v),d);
+const dLabel=d=>`${d.slice(0,4)}.${d.slice(4,6)}.${d.slice(6)}`;
+function host(id,h){const c=$(id);c.innerHTML='';const W=Math.max(c.clientWidth||0,300);const s=S('svg',{viewBox:`0 0 ${W} ${h}`,width:W,height:h,role:'img','aria-label':c.dataset.label||''},c);return{s,W,h}}
+function nice(min,max,n=4){const sp=(max-min)||1,st0=sp/n,mag=10**Math.floor(Math.log10(st0)),e=st0/mag,st=(e<1.5?1:e<3?2:e<7?5:10)*mag,lo=Math.floor(min/st)*st,hi=Math.ceil(max/st)*st,t=[];for(let v=lo;v<=hi+st/2;v+=st)t.push(+v.toFixed(6));return t}
+const tip=$('tip');let tipT;
+function showTip(html,x,y){clearTimeout(tipT);tip.innerHTML=html;tip.hidden=false;const r=tip.getBoundingClientRect();let l=x+14,t=y+14;if(l+r.width>innerWidth-8)l=x-r.width-14;if(l<8)l=8;if(t+r.height>innerHeight-8)t=y-r.height-14;if(t<8)t=8;tip.style.left=l+'px';tip.style.top=t+'px'}
+const hideTip=()=>{tip.hidden=true};
+const pt=e=>{const t=e.touches&&e.touches[0];return t?{x:t.clientX,y:t.clientY}:{x:e.clientX,y:e.clientY}};
+function bind(el,move,leave){const m=e=>move(pt(e),e);el.addEventListener('mousemove',m);el.addEventListener('touchstart',m,{passive:true});el.addEventListener('touchmove',m,{passive:true});const l=()=>{hideTip();leave&&leave()};el.addEventListener('mouseleave',l);el.addEventListener('touchend',()=>{tipT=setTimeout(l,2200)},{passive:true})}
+const row=(cls,label,val)=>`<div class="r"><span>${cls?`<i class="sw" style="background:var(--${cls})"></i>`:''}${label}</span><b>${val}</b></div>`;
+
+function lineChart(o){
+  const {s,W,h}=host(o.id,o.h),off=o.off||new Set(),vis=o.keys.filter(k=>!off.has(k.k));
+  const m={l:50,r:o.direct?84:18,t:o.events?46:14,b:26},px=W-m.l-m.r,py=h-m.t-m.b;
+  const vals=o.rows.flatMap(r=>vis.map(k=>r[k.k])).filter(v=>v!=null);
+  if(!vals.length){S('text',{x:W/2,y:h/2,class:'t','text-anchor':'middle'},s,'표시할 항목을 선택하세요');return}
+  const tk=nice(Math.min(...vals),Math.max(...vals),4),y0=tk[0],y1=tk[tk.length-1],n=o.rows.length;
+  const X=i=>m.l+(n>1?i/(n-1)*px:0),Y=v=>m.t+py-(v-y0)/(y1-y0)*py;
+  tk.forEach(v=>{S('line',{class:'grid',x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v)},s);S('text',{class:'t',x:m.l-7,y:Y(v)+4,'text-anchor':'end'},s,num(v))});
+  const months=[];o.rows.forEach((r,i)=>{if(i===0||r.d.slice(0,6)!==o.rows[i-1].d.slice(0,6))months.push(i)});
+  let lastX=-99;months.forEach(i=>{const x=X(i);if(x-lastX<58||x<m.l+18||x>W-m.r-14)return;lastX=x;const d=o.rows[i].d;S('text',{class:'t',x,y:h-8,'text-anchor':'middle'},s,`${d.slice(2,4)}.${+d.slice(4,6)}월`)});
+  if(o.base!=null&&o.base>=y0&&o.base<=y1)S('line',{class:'base',x1:m.l,x2:W-m.r,y1:Y(o.base),y2:Y(o.base)},s);
+  (o.events||[]).reduce((lanes,ev)=>{const i=o.rows.findIndex(r=>r.d===ev.d);if(i<0)return lanes;const x=X(i);let l=lanes[0]+20<=x?0:(lanes[1]+20<=x?1:-1);if(l<0)return lanes;lanes[l]=x;const cy=l?31:12;S('line',{class:'evl',x1:x,x2:x,y1:cy+8,y2:h-m.b},s);S('circle',{class:'evc',cx:x,cy,r:8.5},s);S('text',{class:'t-w',x,y:cy+3.7,'text-anchor':'middle'},s,ev.n);return lanes},[-99,-99]);
+  vis.forEach(k=>{let d='',pen=false;o.rows.forEach((r,i)=>{const v=r[k.k];if(v==null){pen=false;return}d+=`${pen?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`;pen=true});
+    if(o.area){S('path',{class:`area f${k.c}`,d:`${d}L${X(n-1).toFixed(1)} ${m.t+py}L${X(0).toFixed(1)} ${m.t+py}Z`},s)}
+    S('path',{class:`line c${k.c}`,d},s)});
+  if(o.direct){const pts=vis.map(k=>{let i=n-1;while(i>0&&o.rows[i][k.k]==null)i--;return{k,v:o.rows[i][k.k],y:Y(o.rows[i][k.k])}}).sort((a,b)=>a.y-b.y);for(let i=1;i<pts.length;i++)if(pts[i].y-pts[i-1].y<15)pts[i].y=pts[i-1].y+15;const ov=pts.length?pts[pts.length-1].y-(h-m.b-4):0;if(ov>0)pts.forEach(p=>p.y-=ov);pts.forEach(p=>{S('circle',{class:`f${p.k.c}`,cx:W-m.r+7,cy:p.y-4,r:4},s);S('text',{class:'t-m',x:W-m.r+14,y:p.y,},s,`${p.k.short} ${num(p.v)}`)})}
+  else{const i=n-1,k=vis[0],v=o.rows[i][k.k];S('circle',{class:`mark f${k.c}`,cx:X(i),cy:Y(v),r:5},s)}
+  const gd=S('line',{class:'guide',y1:m.t,y2:m.t+py,visibility:'hidden'},s),mk=vis.map(k=>S('circle',{class:`mark f${k.c}`,r:5,visibility:'hidden'},s));
+  const hit=S('rect',{class:'hit',x:m.l,y:m.t,width:px,height:py},s);
+  bind(hit,p=>{const b=hit.getBoundingClientRect(),f=(p.x-b.left)/b.width,i=Math.max(0,Math.min(n-1,Math.round(f*(n-1)))),r=o.rows[i],x=X(i);gd.setAttribute('x1',x);gd.setAttribute('x2',x);gd.setAttribute('visibility','visible');
+    let html=`<div class="h">${dLabel(r.d)}</div>`;vis.forEach((k,j)=>{const v=r[k.k];if(v==null){mk[j].setAttribute('visibility','hidden');html+=row('s'+k.c,k.label,'데이터 없음');return}mk[j].setAttribute('cx',x);mk[j].setAttribute('cy',Y(v));mk[j].setAttribute('visibility','visible');html+=row('s'+k.c,k.label,num(v,o.dp||0)+(k.unit||''))});
+    if(o.extra)html+=o.extra(r);html+=`<div class="f">${o.src}</div>`;showTip(html,p.x,p.y)},()=>{gd.setAttribute('visibility','hidden');mk.forEach(c=>c.setAttribute('visibility','hidden'))});
+}
+
+function barChart(o){
+  const {s,W,h}=host(o.id,o.h),n=o.cats.length,m={l:42,r:30,t:20,b:30},px=W-m.l-m.r,py=h-m.t-m.b;
+  const vs=o.vals.filter(v=>v!=null),tk=nice(Math.min(0,...vs),Math.max(0,...vs),3),y0=tk[0],y1=tk[tk.length-1],Y=v=>m.t+py-(v-y0)/(y1-y0)*py,band=px/n,bw=Math.max(band*.68,4);
+  tk.forEach(v=>{S('line',{class:v===0?'base':'grid',x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v)},s);S('text',{class:'t',x:m.l-6,y:Y(v)+4,'text-anchor':'end'},s,num(v)+(o.tickU||''))});
+  const step=o.step||Math.max(1,Math.ceil(40/band));
+  const bars=o.vals.map((v,i)=>{const x=m.l+band*i+(band-bw)/2;if(i%step===0)S('text',{class:'t',x:x+bw/2,y:h-6,'text-anchor':'middle'},s,o.cats[i]);if(v==null)return null;return S('rect',{class:`bar ${o.cls?o.cls(i):''}`,x,y:Math.min(Y(v),Y(0)),width:bw,height:Math.max(Math.abs(Y(v)-Y(0)),1),rx:2.5},s)});
+  (o.labels||[]).forEach(l=>{const v=o.vals[l.i],cx=m.l+band*l.i+band/2,a=l.a||'middle';S('text',{class:'t-v',x:a==='end'?cx+bw/2:a==='start'?cx-bw/2:cx,y:v<0?Y(v)+13:Y(v)-5,'text-anchor':a},s,o.fmt(v))});
+  o.vals.forEach((v,i)=>{const r=S('rect',{class:'hit',x:m.l+band*i,y:m.t,width:band,height:py},s);bind(r,p=>{bars[i]&&bars[i].classList.add('hot');showTip(`<div class="h">${o.cats[i]}${o.est&&o.est[i]?' (추정)':''}</div>${row('', o.name, v==null?'데이터 없음':o.fmt(v)+o.unit)}${o.extra?o.extra(i):''}<div class="f">${o.src}</div>`,p.x,p.y)},()=>bars[i]&&bars[i].classList.remove('hot'))});
+}
+
+function hbar(o){
+  const rh=31,h=o.rows.length*rh+8,{s,W}=host(o.id,h),ml=74,mr=58,px=W-ml-mr,vs=o.rows.map(r=>r.v).filter(v=>v!=null),mx=Math.max(...vs,0),X=v=>ml+v/mx*px;
+  o.rows.forEach((r,i)=>{const y=4+i*rh;S('text',{class:r.me?'t-b':'t-m',x:ml-8,y:y+16,'text-anchor':'end'},s,r.n);let b=null;if(r.v==null){S('text',{class:'t',x:ml+2,y:y+16},s,r.t||'해당 없음')}else{b=S('rect',{class:`bar ${r.me?'now':''}`,x:ml,y:y+4,width:Math.max(X(r.v)-ml,2),height:17,rx:2.5},s);S('text',{class:'t-v',x:X(r.v)+6,y:y+16},s,num(r.v,1)+o.u)}
+    const hit=S('rect',{class:'hit',x:0,y,width:W,height:rh},s);bind(hit,p=>{b&&b.classList.add('hot');showTip(`<div class="h">${r.full||r.n}</div>${row('',o.name,r.v==null?(r.t||'해당 없음'):num(r.v,1)+o.u)}${r.note?`<div class="f">${r.note}</div>`:''}<div class="f">${r.me?'자체 계산':'stockanalysis.com 11/10 조회'}</div>`,p.x,p.y)},()=>b&&b.classList.remove('hot'))});
+}
+
+function waterfall(o){
+  const rh=34,h=o.rows.length*rh+8,{s,W}=host(o.id,h),ml=92,mr=56,px=W-ml-mr,mx=Math.max(...o.rows.map(r=>Math.max(r.a,r.b))),X=v=>ml+v/mx*px;
+  o.rows.forEach((r,i)=>{const y=4+i*rh,a=Math.min(r.a,r.b),b=Math.max(r.a,r.b),t=r.total;S('text',{class:t?'t-b':'t-m',x:ml-8,y:y+18,'text-anchor':'end'},s,r.n);
+    const bar=S('rect',{class:`bar ${t?'total':r.b>=r.a?'up':'down'}`,x:X(a),y:y+5,width:Math.max(X(b)-X(a),2),height:19,rx:2.5},s);
+    S('text',{class:'t-v',x:X(b)+6,y:y+18},s,t?num(r.b,1):sgn(r.b-r.a,1));
+    if(i<o.rows.length-1)S('line',{class:'evl',x1:X(r.b),x2:X(r.b),y1:y+24,y2:y+rh+5},s);
+    const hit=S('rect',{class:'hit',x:0,y,width:W,height:rh},s);bind(hit,p=>{bar.classList.add('hot');showTip(`<div class="h">${r.n}</div>${t?row('','영업이익',num(r.b,1)+'억'):row('','증감',sgn(r.b-r.a,1)+'억')+`<div class="f">${r.note||''}</div>`}<div class="f">반기보고서 주석 34</div>`,p.x,p.y)},()=>bar.classList.remove('hot'))});
+}
+
+function football(){
+  const R=DATA.ff,rh=48,top=30,h=top+R.rows.length*rh+24,{s,W}=host('c-ff',h),ml=118,mr=22,px=W-ml-mr,lo=20000,hi=160000,X=v=>ml+(v-lo)/(hi-lo)*px;
+  nice(lo,hi,4).forEach(v=>{if(v<lo||v>hi)return;S('line',{class:'grid',x1:X(v),x2:X(v),y1:top-4,y2:h-22},s);S('text',{class:'t',x:X(v),y:h-6,'text-anchor':'middle'},s,num(v/10000)+'만')});
+  R.rows.forEach((r,i)=>{const y=top+i*rh;S('text',{class:'t-b',x:ml-10,y:y+17,'text-anchor':'end'},s,r.n);S('text',{class:'t',x:ml-10,y:y+33,'text-anchor':'end'},s,r.a===r.b?num(r.a):`${num(r.a)}~${num(r.b)}`);
+    let m;if(r.a===r.b){m=S('circle',{class:'f3',cx:X(r.a),cy:y+21,r:7},s)}else{m=S('rect',{class:`bar ${r.c||''}`,x:X(r.a),y:y+11,width:X(r.b)-X(r.a),height:20,rx:3},s);if(r.mid)S('circle',{class:'mark f1',cx:X(r.mid),cy:y+21,r:5.5},s)}
+    const hit=S('rect',{class:'hit',x:0,y,width:W,height:rh},s);bind(hit,p=>showTip(`<div class="h">${r.n}</div>${row('','범위',r.a===r.b?num(r.a)+'원':num(r.a)+'~'+num(r.b)+'원')}${row('','현재가 대비',r.a===r.b?sgn((r.a/DATA.px-1)*100,0)+'%':sgn((r.a/DATA.px-1)*100,0)+'% ~ '+sgn((r.b/DATA.px-1)*100,0)+'%')}<div class="f">${r.note}</div>`,p.x,p.y))});
+  S('line',{class:'now-l',x1:X(DATA.px),x2:X(DATA.px),y1:top-6,y2:h-22},s);
+  S('text',{class:'t-v',x:X(DATA.px),y:14,'text-anchor':'middle'},s,`현재 ${num(DATA.px)}원`);
+}
+
+function gantt(){
+  const rows=DATA.contracts,rh=46,top=46,h=top+rows.length*rh+24,{s,W}=host('c-gantt',h),ml=112,mr=20,px=W-ml-mr;
+  const T=d=>Date.UTC(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10)),t0=T('2026-01-01'),t1=T('2030-01-01'),X=d=>ml+(T(d)-t0)/(t1-t0)*px;
+  [2026,2027,2028,2029,2030].forEach(y=>{const x=X(y+'-01-01');S('line',{class:'grid',x1:x,x2:x,y1:top-4,y2:h-22},s);if(y<2030||px>240)S('text',{class:'t',x,y:h-6,'text-anchor':y===2030?'end':'middle'},s,String(y))});
+  const fx=X('2027-02-28'),tx=X('2026-11-10');
+  S('line',{class:'now-l',x1:tx,x2:tx,y1:32,y2:h-22},s);S('text',{class:'t-v',x:tx-3,y:28,'text-anchor':'end'},s,'오늘');
+  S('line',{class:'feb-l',x1:fx,x2:fx,y1:18,y2:h-22},s);S('text',{class:'t-v',x:fx+4,y:14},s,'2027년 2월 말');
+  rows.forEach((r,i)=>{const y=top+i*rh;S('text',{class:'t-b',x:ml-10,y:y+16,'text-anchor':'end'},s,r.n);S('text',{class:'t',x:ml-10,y:y+32,'text-anchor':'end'},s,num(r.amt,1)+'억');
+    const b=S('rect',{class:`bar ${r.end<'2028'?'now':''}`,x:X(r.start),y:y+9,width:X(r.end)-X(r.start),height:20,rx:3},s);
+    const hit=S('rect',{class:'hit',x:0,y,width:W,height:rh},s);bind(hit,p=>{b.classList.add('hot');showTip(`<div class="h">${r.full}</div>${row('','금액',num(r.amt,1)+'억원')}${r.usd?row('','외화',r.usd):''}${row('','기간',r.start+' ~ '+r.end)}<div class="f">${r.item} · DART ${r.disc}</div>`,p.x,p.y)},()=>b.classList.remove('hot'))});
+}
+
+/* 상태와 그리기 */
+const st={period:'1Y',base:'20260512',off:new Set()};
+const PER=[['3M',63],['6M',126],['1Y',250],['전체',1e9]];
+const BASES=[['20260512','5/12 고점 = 100'],['20260102','연초(1/2) = 100']];
+const KEYS=[{k:'rf',label:'RFHIC',short:'RFHIC',c:1},{k:'bk',label:'통신장비 4종',short:'통신4종',c:3},{k:'kq',label:'코스닥',short:'코스닥',c:2}];
+const QS=DATA.q,est=QS.map(q=>!!q.est);
+function idxRows(){const b=DATA.px0.find(r=>r.d===st.base);return DATA.px0.filter(r=>r.d>=st.base&&r.rf!=null).map(r=>({d:r.d,rf:r.rf/b.rf*100,kq:r.kq/b.kq*100,bk:DATA.peers.reduce((a,c)=>a+r[c]/b[c]*100,0)/DATA.peers.length}))}
+function drawIdx(){const rows=idxRows();lineChart({id:'c-idx',h:320,rows,keys:KEYS,off:st.off,direct:true,base:100,dp:1,src:'기준일 종가 = 100',});
+  const e=rows[rows.length-1],f=v=>sgn(v-100,1)+'%';$('idx-cap').textContent=`기준일부터 11/6까지: RFHIC ${f(e.rf)}, 통신장비 4종 ${f(e.bk)}, 코스닥 ${f(e.kq)}.`+(st.base==='20260102'?' 연초 기준으로 보면 RFHIC는 코스닥보다 훨씬 강합니다. 싸졌다고 단정하기 전에 고점이 연초 대비 3배 넘게 오른 자리였다는 점을 같이 봐야 합니다.':' 위 버튼으로 연초 기준으로 바꿔 볼 수 있습니다.')}
+function drawPrice(){const all=DATA.px0,n=PER.find(p=>p[0]===st.period)[1],rows=all.slice(-n);lineChart({id:'c-price',h:300,rows,keys:[{k:'p',label:'종가',c:1,unit:'원'}],area:true,events:DATA.events,src:'일별 정규장 종가',extra:r=>row('','거래량',num(r.v)+'주')+row('','5/12 고점 대비',sgn((r.p/112500-1)*100,1)+'%')});
+  $('ev-list').innerHTML=DATA.events.filter(e=>rows.some(r=>r.d===e.d)).map(e=>`<li><b>${e.n}</b> ${e.t}</li>`).join('')}
+function drawAll(){
+  drawPrice();drawIdx();
+  const cats=QS.map(q=>q.q),srcE=i=>QS[i].est?'증권사 추정':'DART';
+  const qc=i=>QS[i].est?'est':(i===QS.length-2?'now':'');
+  const LA=QS.length-2;
+  barChart({id:'c-rev',h:210,cats,vals:QS.map(q=>q.rev),est,cls:qc,name:'매출',unit:'억',fmt:v=>num(v,0),labels:[{i:LA,a:'end'},{i:LA+1,a:'start'}],src:'연결, DART·증권사',step:4,extra:i=>QS[i].est?'<div class="f">유진 1,014억 / KB 956억</div>':''});
+  barChart({id:'c-op',h:210,cats,vals:QS.map(q=>q.op),est,cls:qc,name:'영업이익',unit:'억',fmt:v=>num(v,0),labels:[{i:LA,a:'end'},{i:LA+1,a:'start'}],src:'연결, DART·증권사',step:4});
+  barChart({id:'c-opm',h:210,cats,vals:QS.map(q=>q.op/q.rev*100),est,cls:qc,name:'영업이익률',unit:'%',tickU:'',fmt:v=>num(v,1),labels:[{i:LA,a:'end'},{i:LA+1,a:'start'}],src:'자체 계산(영업이익÷매출)',step:4});
+  const Y=DATA.years;barChart({id:'c-year',h:210,cats:Y.map(y=>y.y),vals:Y.map(y=>y.op),est:Y.map(y=>y.est),cls:i=>Y[i].est?'est':'now',name:'영업이익',unit:'억',fmt:v=>num(v,0),labels:Y.map((y,i)=>({i})),src:'DART·증권사',step:1,extra:i=>Y[i].note?`<div class="f">${Y[i].note}</div>`:''});
+  waterfall({id:'c-wf',rows:DATA.wf});
+  const B=DATA.backlog,LB=B.length-1;barChart({id:'c-bl',h:250,cats:B.map(b=>b.q),vals:B.map(b=>b.v),cls:i=>i===LB?'alt':(i===LB-1?'now':''),name:'수주잔고',unit:'억',fmt:v=>num(v,0),labels:[{i:LB-2},{i:LB-1,a:'end'},{i:LB,a:'start'}],src:'각 보고서 수주상황',step:4,extra:i=>`<div class="f">${B[i].def}</div>`});
+  gantt();football();
+  const P=DATA.peers2,mkr=(key,u)=>P.filter(p=>!p.ex).map(p=>({n:p.s,full:p.n,me:p.me,v:p[key],t:'적자',note:key==='ev'&&p.me?DATA.evNote:''}));
+  hbar({id:'c-per',rows:mkr('per'),u:'배',name:'선행 PER'});hbar({id:'c-ev',rows:mkr('ev'),u:'배',name:'EV/EBITDA'});hbar({id:'c-mg',rows:mkr('opm'),u:'%',name:'영업이익률'});
+}
+function tiles(){const q3=QS[QS.length-2];$('tiles').innerHTML=[[num(DATA.px)+'원','11/9 종가'],[`${num(DATA.mcap/10000,2)}조`,'시가총액'],[`${sgn((DATA.px/DATA.high-1)*100,0)}%`,'5/12 고점 대비'],[`${num(q3.op/q3.rev*100,1)}%`,'3분기 영업이익률'],[`${num(DATA.px/DATA.eps,1)}배`,'2027년 추정 PER']].map(t=>`<div class="tile"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}
+function buttons(id,items,get,set){const c=$(id);c.innerHTML='';items.forEach(([v,l])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=l||v;b.setAttribute('aria-pressed',get()===v);b.onclick=()=>{set(v);[...c.children].forEach((x,i)=>x.setAttribute('aria-pressed',items[i][0]===v))};c.appendChild(b)})}
+function legend(){const c=$('leg-idx');c.innerHTML='';KEYS.forEach(k=>{const b=document.createElement('button');b.className='btn';b.type='button';b.setAttribute('aria-pressed',!st.off.has(k.k));b.innerHTML=`<i class="sw" style="background:var(--s${k.c})"></i>${k.label}`;b.onclick=()=>{st.off.has(k.k)?st.off.delete(k.k):st.off.add(k.k);b.setAttribute('aria-pressed',!st.off.has(k.k));drawIdx()};c.appendChild(b)})}
+function table(id,cols,rows,meF){const t=$(id);let sk=-1,dir=1,data=rows.slice();const paint=()=>{t.innerHTML=`<thead><tr>${cols.map((c,i)=>`<th aria-sort="${i===sk?(dir>0?'ascending':'descending'):'none'}"><button type="button" data-i="${i}">${c.h}${i===sk?(dir>0?' ▲':' ▼'):''}</button></th>`).join('')}</tr></thead><tbody>${data.map(r=>`<tr class="${meF&&meF(r)?'me':''}">${cols.map(c=>`<td>${c.f(r)}</td>`).join('')}</tr>`).join('')}</tbody>`;t.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(sk===i)dir=-dir;else{sk=i;dir=1}const g=cols[i].v;data=rows.slice().sort((a,b)=>{const x=g(a),y=g(b);if(x==null)return 1;if(y==null)return -1;return(x>y?1:x<y?-1:0)*dir});paint()})};paint()}
+function copyCsv(btn,cols,rows){const q=s=>`"${String(s).replace(/"/g,'""')}"`,csv=[cols.map(c=>q(c.h)).join(','),...rows.map(r=>cols.map(c=>{const v=c.v(r);return q(v==null?'':(typeof v==='number'?+v.toFixed(2):v))}).join(','))].join('\n');const old=btn.textContent;const ok=()=>{btn.textContent='복사됨';setTimeout(()=>btn.textContent=old,1500)};const fb=()=>{const ta=document.createElement('textarea');ta.value=csv;btn.parentNode.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(_){btn.textContent='아래 칸에서 복사하세요';return}ta.remove()};navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(csv).then(ok,fb):fb()}
+const n1=k=>({f:r=>r[k]==null?'데이터 없음':num(r[k],1),v:r=>r[k]});
+const QCOL=[{h:'분기',f:r=>r.q+(r.est?' (추정)':''),v:r=>r.i},{h:'매출(억)',...n1('rev')},{h:'영업이익(억)',...n1('op')},{h:'영업이익률(%)',f:r=>num(r.op/r.rev*100,1),v:r=>r.op/r.rev*100},{h:'지배순이익(억)',...n1('ni')}];
+const PCOL=[{h:'기업',f:r=>r.n,v:r=>r.n},{h:'시가총액',f:r=>r.cap,v:r=>r.capN},{h:'선행 PER(배)',...n1('per')},{h:'EV/EBITDA(배)',...n1('ev')},{h:'PSR(배)',...n1('psr')},{h:'영업이익률(%)',...n1('opm')},{h:'비교 적합성',f:r=>r.fit,v:r=>r.fit}];
+const BCOL=[{h:'증권사',f:r=>r.n,v:r=>r.n},{h:'일자',f:r=>r.d,v:r=>r.d},{h:'목표주가(원)',f:r=>num(r.tp),v:r=>r.tp},{h:'현재가 대비',f:r=>sgn((r.tp/DATA.px-1)*100,0)+'%',v:r=>r.tp},{h:'핵심 논리',f:r=>r.t,v:r=>r.t}];
+const isDark=()=>{const a=document.documentElement.getAttribute('data-theme');if(a==='dark')return true;if(a==='light')return false;return matchMedia('(prefers-color-scheme: dark)').matches};
+const themeLabel=()=>{$('theme').textContent=isDark()?'라이트 모드':'다크 모드'};
+$('theme').onclick=()=>{document.documentElement.setAttribute('data-theme',isDark()?'light':'dark');themeLabel()};
+new MutationObserver(themeLabel).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',themeLabel);
+tiles();themeLabel();
+buttons('periods',PER.map(p=>[p[0]]),()=>st.period,v=>{st.period=v;drawPrice()});
+buttons('bases',BASES,()=>st.base,v=>{st.base=v;drawIdx()});
+legend();drawAll();
+const qRows=QS.map((q,i)=>({...q,i}));
+table('t-q',QCOL,qRows);table('t-p',PCOL,DATA.peers2,r=>r.me);table('t-b',BCOL,DATA.brokers);
+$('csv-q').onclick=e=>copyCsv(e.target,QCOL,qRows);$('csv-p').onclick=e=>copyCsv(e.target,PCOL,DATA.peers2);
+$('ev-cap').textContent=DATA.evNote;
+let rw=innerWidth,rt;addEventListener('resize',()=>{if(innerWidth===rw)return;rw=innerWidth;clearTimeout(rt);rt=setTimeout(drawAll,120)});
+</script>
+</body>
+</html>

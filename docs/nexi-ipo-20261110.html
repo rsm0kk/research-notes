@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>넥스아이 상장 점검</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 레이아웃: 네이비 결론 밴드 → 가격·수급·물량·사업·현금 순서의 그래프 카드 */
+:root{
+  --bg:#f3f6f9;--panel:#fff;--panel-2:#f7f9fc;--navy:#172b4d;--navy-ink:#fff;--navy-2:#c9d6ea;
+  --line:#d9e0e8;--line-soft:#e9edf2;--ink:#172033;--ink-2:#475467;--ink-3:#667085;
+  --accent:#175cd3;--accent-soft:#eaf2ff;--up:#b42318;--down:#175cd3;--warn-soft:#fff4e5;--warn:#93500a;
+  --s1:#0080a3;--s2:#7a4fd0;--s3:#c2570c;--neutral:#98a4b3;--neutral-soft:#c8d0da;
+  --shadow:0 10px 26px rgba(23,43,77,.07);
+  --sans:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1420;--panel:#16202f;--panel-2:#1b2739;--navy:#10233f;--navy-ink:#fff;--navy-2:#b9c9e0;
+  --line:#2c3d55;--line-soft:#1f2d40;--ink:#eaf1fa;--ink-2:#b3c3d6;--ink-3:#93a6bc;
+  --accent:#69b0ff;--accent-soft:rgba(105,176,255,.16);--up:#ff8a7a;--down:#69b0ff;--warn-soft:rgba(245,159,90,.14);--warn:#f6b67e;
+  --s1:#0f97a8;--s2:#a36bf0;--s3:#d07a1a;--neutral:#7c8ca0;--neutral-soft:#46566b;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1420;--panel:#16202f;--panel-2:#1b2739;--navy:#10233f;--navy-ink:#fff;--navy-2:#b9c9e0;
+  --line:#2c3d55;--line-soft:#1f2d40;--ink:#eaf1fa;--ink-2:#b3c3d6;--ink-3:#93a6bc;
+  --accent:#69b0ff;--accent-soft:rgba(105,176,255,.16);--up:#ff8a7a;--down:#69b0ff;--warn-soft:rgba(245,159,90,.14);--warn:#f6b67e;
+  --s1:#0f97a8;--s2:#a36bf0;--s3:#d07a1a;--neutral:#7c8ca0;--neutral-soft:#46566b;--shadow:none;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 var(--sans);word-break:keep-all;overflow-wrap:anywhere}
+a{color:var(--accent)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hero{background:var(--navy);color:var(--navy-ink);padding-block:26px 24px}
+.hero .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.eyebrow{font-size:13px;letter-spacing:.04em;color:var(--navy-2)}
+.hero h1{font-size:clamp(25px,4.4vw,36px);line-height:1.28;margin:12px 0 10px;text-wrap:balance}
+.hero p{margin:0;color:var(--navy-2);max-width:70ch}
+.btn{font:inherit;font-size:13px;min-height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:700}
+.hero .btn{background:transparent;color:var(--navy-ink);border-color:var(--navy-2);flex:none}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;margin-top:22px;background:rgba(255,255,255,.2);border-radius:10px;overflow:hidden}
+.tile{background:var(--navy);padding:12px 14px;min-width:0}
+.tile b{display:block;font:700 clamp(19px,2.6vw,25px)/1.25 var(--sans);font-variant-numeric:tabular-nums}
+.tile span{font-size:12.5px;color:var(--navy-2)}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;gap:4px;overflow-x:auto}
+.nav a{display:flex;align-items:center;min-height:44px;padding:0 11px;white-space:nowrap;color:var(--ink-2);text-decoration:none;font-size:14px}
+main{padding-block:18px 40px;display:grid;gap:16px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow);min-width:0;scroll-margin-top:60px}
+h2{font-size:20px;line-height:1.38;margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;margin:0 0 2px}
+.lead{margin:0 0 14px;color:var(--ink-2);max-width:74ch}
+.grid2{display:grid;gap:18px;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
+.cell{min-width:0}
+.sub{font-size:12.5px;color:var(--ink-3);margin:0 0 6px}
+.chart{overflow-x:auto;min-height:60px}
+.chart svg{display:block;max-width:none}
+figure{margin:0;min-width:0}
+figcaption,.cap{font-size:13px;color:var(--ink-2);margin-top:8px}
+.src{font-size:12px;color:var(--ink-3);margin-top:6px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.steps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;font-size:14px}
+.steps li{display:flex;gap:10px;align-items:baseline;background:var(--panel-2);border-radius:8px;padding:8px 12px}
+.steps b{font-variant-numeric:tabular-nums;min-width:96px;text-align:right}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 14px}
+.stat{background:var(--panel-2);border-radius:8px;padding:10px 12px;min-width:0}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--ink-2)}
+.note{background:var(--warn-soft);border-radius:8px;padding:10px 12px;font-size:13.5px;margin-top:12px}
+.note b{color:var(--warn)}
+.list{margin:0;padding-left:20px}
+.list li{margin:7px 0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line-soft);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--ink-2);font-weight:600;padding:0}
+th button{all:unset;display:block;padding:8px 10px;cursor:pointer;width:100%;box-sizing:border-box}
+th button:focus-visible,.btn:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#tip{position:fixed;z-index:30;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:12.5px;line-height:1.5;box-shadow:0 8px 22px rgba(10,20,40,.22);max-width:270px;font-variant-numeric:tabular-nums}
+#tip .h{font-weight:700;margin-bottom:2px}
+#tip .r{display:flex;align-items:center;gap:10px;justify-content:space-between}
+#tip .f{color:var(--ink-3);font-size:11.5px;margin-top:3px}
+.t{font:11px var(--sans);fill:var(--ink-3)}
+.t-b{font:700 11.5px var(--sans);fill:var(--ink)}
+.t-m{font:11px var(--sans);fill:var(--ink)}
+.t-v{font:700 11px var(--sans);fill:var(--ink);font-variant-numeric:tabular-nums}
+.t-up{font:700 11px var(--sans);fill:var(--up)}
+.grid{stroke:var(--line-soft)}
+.base{stroke:var(--neutral);stroke-width:1}
+.bar{fill:var(--neutral-soft)}
+.bar.now{fill:var(--s1)}
+.bar.est{fill:url(#hatch);stroke:var(--s1);stroke-width:1}
+.bar.alt{fill:var(--s2)}
+.bar.warm{fill:var(--s3)}
+.bar.up{fill:var(--up)}
+.bar.down{fill:var(--down)}
+.bar.hot{filter:brightness(.88)}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}
+.mark{stroke:var(--panel);stroke-width:2}
+.hit{fill:transparent;touch-action:pan-y;cursor:crosshair}
+.ref-up{stroke:var(--up);stroke-width:1.5}
+.ref-d{stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:4 3}
+.colband{fill:var(--panel-2)}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile:first-child{grid-column:span 2}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){section{padding:14px 12px}.steps b{min-width:84px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" style="fill:var(--panel)"/><rect width="2" height="5" style="fill:var(--s1)"/></pattern>
+</defs></svg>
+
+<header class="hero"><div class="wrap">
+  <div class="top"><div class="eyebrow">넥스아이 · 코스닥 기술특례 · 상장일 2026년 11월 12일 · 기준일 11월 10일</div><button class="btn" id="theme" type="button">다크 모드</button></div>
+  <h1>상장일 추격 매수는 피하고, 1개월 뒤 물량 해제를 지켜본 다음 판단</h1>
+  <p>공모가 8,000원은 희망밴드 하단보다 24% 낮고, 5월 Pre-IPO 단가 9,858원보다도 낮습니다. 대신 상장일에 거래 가능한 물량이 37%이고 기관 확약은 4%뿐이라, 첫 달은 수급이 가격을 정할 가능성이 큽니다.</p>
+  <div class="tiles" id="tiles"></div>
+</div></header>
+
+<nav class="nav" aria-label="목차"><div class="wrap">
+  <a href="#price">가격</a><a href="#book">수요예측</a><a href="#float">유통물량</a><a href="#biz">사업</a><a href="#earn">실적 추정</a><a href="#cash">현금</a><a href="#risk">체크포인트</a><a href="#data">자료</a>
+</div></nav>
+
+<main class="wrap">
+
+<section id="price">
+  <h2>공모가는 5월 Pre-IPO 투자 단가보다 19% 낮게 정해졌습니다</h2>
+  <p class="lead">주관사 평가가액 17,729원에서 55% 할인된 값입니다. 2025년 Series B 투자자는 공모가 기준으로도 62% 이익이지만, 올해 5월 Pre-IPO로 500억을 넣은 투자자는 손실 구간에서 출발합니다.</p>
+  <figure>
+    <div class="chart" id="c-ladder" data-label="투자 라운드별 주당 가격과 공모가"></div>
+    <figcaption>과거 라운드 단가는 2026년 7월 무상증자(1주당 52주 배정)를 반영해 53으로 나눈 자체 환산값입니다. Series B 261,730원 → 4,938원, Pre-IPO 522,500원 → 9,858원.</figcaption>
+  </figure>
+  <ul class="steps" id="val-steps"></ul>
+  <p class="src">출처: 정정 투자설명서(2026-10-30) 공모가 산정 요약표, 최근 3년간 주식 발행 내역.</p>
+</section>
+
+<section id="book">
+  <h2>국내 기관 평균 신청가는 약 8,490원이었고, 공모가는 거기에 맞춰졌습니다</h2>
+  <p class="lead">참여 기관의 57%가 밴드 하단 미만을 써냈습니다. 평균 신청가 10,323원을 끌어올린 것은 주관사와 거래 실적이 없는 해외 기관 50곳의 주문입니다.</p>
+  <div class="stats" id="book-stats"></div>
+  <div class="grid2">
+    <figure class="cell">
+      <h3>신청 가격대 분포</h3><p class="sub">전체 대비 비중, %</p>
+      <div class="controls" id="dist-mode" role="group" aria-label="기준 선택"></div>
+      <div class="chart" id="c-dist" data-label="수요예측 신청 가격대 분포"></div>
+      <figcaption>밴드 상단(13,000원)에 몰린 수량의 79%가 거래실적 없는 해외 기관 37곳의 주문입니다.</figcaption>
+    </figure>
+    <figure class="cell">
+      <h3>기관 유형별 평균 신청가</h3><p class="sub">원, 수량 가중 평균</p>
+      <div class="chart" id="c-type" data-label="기관 유형별 평균 신청가"></div>
+      <figcaption>빨간 선이 공모가 8,000원, 점선이 밴드 하단 10,500원입니다. 국내 기관은 대부분 밴드 하단 아래를 냈습니다.</figcaption>
+    </figure>
+  </div>
+  <p class="src">출처: 정정 투자설명서 수요예측 결과(참여 506곳, 2억 4,969만 주), 증권발행실적보고서(2026-11-06).</p>
+</section>
+
+<section id="float">
+  <h2>상장일 유통 37%, 한 달 뒤 60%까지 늘어납니다</h2>
+  <p class="lead">보호예수가 전혀 없는 벤처캐피털 물량이 18.7%(857만 주)입니다. 상장 1개월 뒤에는 23.2%가 한꺼번에 풀립니다. 최대주주와 공동창업자 등 22.7%는 3년 보호예수입니다.</p>
+  <figure>
+    <div class="chart" id="c-float" data-label="상장 후 경과기간별 누적 유통가능 물량"></div>
+    <figcaption>막대에 올리면 그 시점에 새로 풀리는 주식 수와 공모가 기준 금액이 나옵니다. 상장예정주식수 45,845,239주 기준.</figcaption>
+  </figure>
+  <p class="src">출처: 정정 투자설명서 [상장 후 경과기간별 유통가능 물량].</p>
+</section>
+
+<section id="biz">
+  <h2>면역항암제가 듣지 않는 암을 겨냥한 신약 개발사, 기술이전 실적은 1건</h2>
+  <p class="lead">자체 플랫폼 NEXORA로 면역항암제 불응의 원인 단백질을 찾고, 그것을 막는 항체를 만듭니다. 첫 물질 NXI-101은 2024년 3월 일본 오노약품공업(옵디보 개발사)에 넘겼고, 지금까지 매출 전부가 이 계약에서 나왔습니다. 계약금과 총 규모는 비공개입니다.</p>
+  <figure>
+    <div class="chart" id="c-pipe" data-label="파이프라인 개발 단계"></div>
+    <figcaption>임상에 들어간 물질은 오노가 진행하는 NXI-101과, 한국(2025년 12월)·미국(2026년 8월)에서 1/2상 계획 승인을 받은 NXI-201 둘입니다. 나머지 5개는 선도물질 최적화 단계입니다. ADC 물질은 리가켐바이오·GC녹십자 등과 공동연구 중입니다.</figcaption>
+  </figure>
+  <p class="src">출처: 정정 투자설명서 [당사 주요 파이프라인 개발 현황], [ONO Pharmaceutical과의 NXI-101 기술이전 계약 개요].</p>
+</section>
+
+<section id="earn">
+  <h2>공모가의 근거인 2030년 매출 1,321억은 아직 맺지 않은 계약이 대부분입니다</h2>
+  <p class="lead">추정 손익은 2027년 하반기부터 NXI-S301, 201, S160 등을 차례로 기술이전한다고 가정합니다. 2026~2030년 추정 매출 합계 중 계약이 이미 있는 NXI-101 몫은 12%입니다.</p>
+  <div class="grid2">
+    <div class="cell"><h3>매출</h3><p class="sub">억원, 빗금은 회사 추정</p><div class="chart" id="c-rev" data-label="연간 매출 실적과 추정"></div></div>
+    <div class="cell"><h3>영업이익</h3><p class="sub">억원, 빗금은 회사 추정</p><div class="chart" id="c-op" data-label="연간 영업이익 실적과 추정"></div></div>
+  </div>
+  <div style="height:14px"></div>
+  <figure>
+    <h3>2026~2030년 추정 매출 합계, 파이프라인별</h3><p class="sub">억원. 진한 막대가 계약 체결된 물질</p>
+    <div class="chart" id="c-mix" data-label="파이프라인별 추정 매출 합계"></div>
+    <figcaption>2030년 매출 1,321억 중 81%가 NXI-201과 NXI-401에서 나온다고 봅니다. 401은 아직 비임상 최적화 단계이고, 2030년 하반기 사람 대상 효능(PoC) 확보 뒤 기술이전을 가정합니다.</figcaption>
+  </figure>
+  <p class="src">출처: 정정 투자설명서 [2026년~2030년 추정 손익계산서], [파이프라인별 추정 매출액], [요약 손익(별도)]. 2026년은 반기 실적.</p>
+</section>
+
+<section id="cash">
+  <h2>현금이 시가총액의 39%, 계약이 없어도 2029년까지는 버틸 수 있는 규모</h2>
+  <p class="lead">6월 말 현금성 자산 1,024억에 공모 순수입 394억을 더하면 약 1,419억입니다. 회사가 계획한 2027~2029년 지출은 1,278억입니다. 하반기 영업손실(회사 연간 추정 기준 약 115억)을 빼면 여유가 거의 없어, 2029년 전후로 기술이전 수입이나 추가 조달이 필요합니다.</p>
+  <div class="grid2">
+    <figure class="cell"><div class="chart" id="c-cash" data-label="보유 현금과 계획 지출"></div>
+      <figcaption id="cash-cap"></figcaption></figure>
+    <div class="cell" style="align-self:center">
+      <ul class="list">
+        <li>2026년 반기 순손실 754억은 상환전환우선주 관련 파생상품평가손실 720억 때문이고 현금 유출이 아닙니다. 우선주는 5월에 모두 보통주로 바뀌어 자본잠식도 해소됐습니다.</li>
+        <li>2027년 추정 영업손실은 369억으로 커집니다. NXI-201 임상 비용이 본격화되기 때문입니다.</li>
+        <li>주식매수선택권 187.8만 주(공모 후 주식의 4.1%)가 남아 있습니다.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="src">출처: 정정 투자설명서 [공모자금 사용계획 요약], 투자위험요소 사·아항, [요약 재무상태 및 자본잠식률].</p>
+</section>
+
+<section id="risk">
+  <h2>체크포인트</h2>
+  <div class="grid2">
+    <div class="cell"><h3>다시 볼 신호</h3><ul class="list">
+      <li>상장 1개월(12월 중순) 23.2% 해제 물량이 소화된 뒤 공모가 근처 가격</li>
+      <li>NXI-201 1상 첫 환자 투여와 초기 안전성 데이터</li>
+      <li>NXI-S301 기술이전(회사 가정 2027년 하반기)</li>
+      <li>오노의 NXI-101 임상 진척과 마일스톤 수령(회사 가정 2028년)</li>
+    </ul></div>
+    <div class="cell"><h3>조심할 점</h3><ul class="list">
+      <li>코스닥이 고점 대비 절반 가까이 빠진 상태에서 바이오 공모주 심리가 약합니다.</li>
+      <li>Pre-IPO 투자자가 손실 구간이라, 공모가 위에서는 본전 매도 물량이 나올 수 있습니다.</li>
+      <li>기술특례 상장사라 매출 요건은 5년 유예되지만, 자본잠식 50% 요건은 유예되지 않습니다.</li>
+      <li>상장일 가격제한폭은 공모가의 60~400%이고 변동성완화장치가 적용되지 않습니다.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="data">
+  <h2>자료</h2>
+  <div class="controls"><button class="btn" id="csv" type="button">핵심 수치 CSV 복사</button></div>
+  <div class="tw"><table id="t-key"></table></div>
+  <div class="note"><b>읽은 서류.</b> 보내주신 PDF 세 건과 같은 DART 공시 원문(정정 투자설명서, 발행조건확정 증권신고서, 증권발행실적보고서)을 읽었습니다. 이 PC에서는 PDF 페이지를 직접 렌더링할 수 없어, 실적보고서만 PDF로 읽고 나머지 두 건은 DART 원문 XML로 대조했습니다.</div>
+  <ul class="list" style="font-size:13.5px;margin-top:12px">
+    <li>DART: <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261030000472">정정 투자설명서(10/30)</a> · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261030000467">발행조건확정 증권신고서(10/30)</a> · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261106000215">증권발행실적보고서(11/6)</a></li>
+    <li>언론: 한국경제 11/5 "일반청약 13대 1, 증거금 663억원", 비즈워치 11/5 "넥스아이 공모가 하회…프리IPO 투자자 우려", 연합인포맥스 11/8 "넥스아이·바로팜 관심 상대적으로 저조"(다음 뉴스 검색으로 확인)</li>
+  </ul>
+  <p class="src">투자 판단 참고용이며 매수·매도 권유가 아닙니다. 수치는 2026-11-10 기준이고 상장일 시세는 반영하지 않았습니다.</p>
+</section>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const DATA={
+  ipo:8000, band:[10500,13000], fair:17729, shares:45845239, preShares:40670239,
+  seriesB:261730/53, preipo:522500/53,
+  steps:[["2030년 추정 순이익","973억"],["연 20%로 4.5년 할인","428억"],["비교기업 PER 19.15배 적용","8,203억"],["주당 평가가액(46,271,412주)","17,729원"],["밴드 할인율 26.7~40.8%","10,500~13,000원"],["확정 공모가(평가액 대비 54.9% 할인)","8,000원"]],
+  dist:[{n:"상단 초과",c:6,q:1371000},{n:"밴드 상단",c:90,q:108659000},{n:"밴드 내",c:3,q:4000},{n:"밴드 하단",c:119,q:19419000},{n:"하단 미만",c:288,q:120236000}],
+  types:[{n:"운용사(고유)",c:179,q:88725000,p:8233},{n:"기타",c:171,q:36190000,p:8716},{n:"운용사(집합)",c:13,q:6660000,p:8965},{n:"투자일임사",c:7,q:16000,p:9000},{n:"연기금·은행·보험",c:11,q:7696000,p:9261},{n:"증권사",c:57,q:3479000,p:10180},{n:"해외(거래실적 유)",c:18,q:13698000,p:12599,f:1},{n:"해외(거래실적 무)",c:50,q:93225000,p:12791,f:1}],
+  book:{bidders:506,valid:412,ratio:60.61,lock:162000,inst:3750000,retailRatio:16576870/1250000,deposit:663,equalShort:119298},
+  float:[{n:"상장일",add:16947525,cum:36.97},{n:"1개월",add:10631535,cum:60.16},{n:"2개월",add:1589576,cum:63.62},{n:"3개월",add:4197573,cum:72.78},{n:"6개월",add:252831,cum:73.33},{n:"1년",add:1802424,cum:77.26},{n:"3년",add:10423775,cum:100}],
+  years:[{y:"2023",rev:0,op:-150.74},{y:"2024",rev:141.17,op:17.92},{y:"2025",rev:51.1,op:-165.24},{y:"2026E",rev:30.21,op:-135.97,est:1,note:"반기 실적 매출 30억·영업손실 21억, 연간은 회사 추정"},{y:"2027E",rev:85.98,op:-368.63,est:1},{y:"2028E",rev:586.13,op:90.17,est:1},{y:"2029E",rev:516.37,op:169.05,est:1},{y:"2030E",rev:1320.91,op:950.69,est:1}],
+  mix:[{n:"NXI-201",v:1045.43,note:"2028년 계약금 450억, 2030년 마일스톤 595억"},{n:"NXI-401",v:475.43,note:"2030년 계약금"},{n:"NXI-M501",v:357.85,note:"2029년 계약금"},{n:"NXI-101",v:311.85,me:1,note:"오노 계약. 2026년 30억, 2028년 94억, 2030년 188억"},{n:"NXI-S301",v:147.21,note:"2027년 계약금 86억, 2029년 마일스톤 61억"},{n:"NXI-S302",v:129.73,note:"2029·2030년"},{n:"NXI-S160",v:72.11,note:"2028·2030년"}],
+  pipe:[{n:"NXI-101",s:4,t:"오노 주도",note:"중화항체, 고형암. 2024.03 오노약품공업에 글로벌 기술이전, 일본 임상 1상"},{n:"NXI-201",s:3,t:"1상 준비",note:"중화항체, 진행성·전이성 고형암. IND 승인 한국 2025.12, 미국 2026.08"},{n:"NXI-401",s:1,note:"중화항체, 선도물질 최적화"},{n:"NXI-M501",s:1,note:"이중항체, 선도물질 최적화"},{n:"NXI-S301",s:1,t:"공동연구",note:"ADC, 리가켐바이오사이언스 등과 물질이전·공동연구"},{n:"NXI-S160",s:1,t:"GC녹십자",note:"ADC, GC녹십자 공동연구"},{n:"NXI-S302",s:1,note:"ADC, 선도물질 최적화"}],
+  cash:{held:1024.43,net:394.28,spend:1277.85,h2loss:114.62}
+};
+const NS='http://www.w3.org/2000/svg';
+const S=(t,a,p,tx)=>{const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);if(tx!=null)e.textContent=tx;if(p)p.appendChild(e);return e};
+const $=id=>document.getElementById(id);
+const num=(v,d=0)=>v.toLocaleString('ko-KR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sgn=(v,d=1)=>(v>0?'+':v<0?'−':'')+num(Math.abs(v),d);
+function host(id,h){const c=$(id);c.innerHTML='';const W=Math.max(c.clientWidth||0,300);const s=S('svg',{viewBox:`0 0 ${W} ${h}`,width:W,height:h,role:'img','aria-label':c.dataset.label||''},c);return{s,W,h}}
+function nice(min,max,n=4){const sp=(max-min)||1,st0=sp/n,mag=10**Math.floor(Math.log10(st0)),e=st0/mag,st=(e<1.5?1:e<3?2:e<7?5:10)*mag,lo=Math.floor(min/st)*st,hi=Math.ceil(max/st)*st,t=[];for(let v=lo;v<=hi+st/2;v+=st)t.push(+v.toFixed(6));return t}
+const tip=$('tip');let tipT;
+function showTip(html,x,y){clearTimeout(tipT);tip.innerHTML=html;tip.hidden=false;const r=tip.getBoundingClientRect();let l=x+14,t=y+14;if(l+r.width>innerWidth-8)l=x-r.width-14;if(l<8)l=8;if(t+r.height>innerHeight-8)t=y-r.height-14;if(t<8)t=8;tip.style.left=l+'px';tip.style.top=t+'px'}
+const hideTip=()=>{tip.hidden=true};
+const pt=e=>{const t=e.touches&&e.touches[0];return t?{x:t.clientX,y:t.clientY}:{x:e.clientX,y:e.clientY}};
+function bind(el,move,leave){const m=e=>move(pt(e));el.addEventListener('mousemove',m);el.addEventListener('touchstart',m,{passive:true});el.addEventListener('touchmove',m,{passive:true});const l=()=>{hideTip();leave&&leave()};el.addEventListener('mouseleave',l);el.addEventListener('touchend',()=>{tipT=setTimeout(l,2200)},{passive:true})}
+const row=(label,val)=>`<div class="r"><span>${label}</span><b>${val}</b></div>`;
+const won=v=>num(Math.round(v))+'원';
+const krw=v=>v>=10000?`${num(v/10000,1)}만`:v>=1000?`${num(v/1000)}천`:num(v);
+
+function barChart(o){
+  const {s,W,h}=host(o.id,o.h),n=o.cats.length,m={l:46,r:16,t:20,b:30},px=W-m.l-m.r,py=h-m.t-m.b;
+  const vs=o.vals.filter(v=>v!=null),tk=nice(Math.min(0,...vs),Math.max(0,...vs),o.ticks||3),y0=tk[0],y1=tk[tk.length-1],Y=v=>m.t+py-(v-y0)/(y1-y0)*py,band=px/n,bw=Math.max(band*.62,4);
+  tk.forEach(v=>{S('line',{class:v===0?'base':'grid',x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v)},s);S('text',{class:'t',x:m.l-6,y:Y(v)+4,'text-anchor':'end'},s,num(v)+(o.tickU||''))});
+  const bars=o.vals.map((v,i)=>{const x=m.l+band*i+(band-bw)/2;S('text',{class:'t',x:x+bw/2,y:h-6,'text-anchor':'middle'},s,o.cats[i]);if(v==null)return null;return S('rect',{class:`bar ${o.cls?o.cls(i):''}`,x,y:Math.min(Y(v),Y(0)),width:bw,height:Math.max(Math.abs(Y(v)-Y(0)),1),rx:2.5},s)});
+  (o.labels||[]).forEach(i=>{const v=o.vals[i],cx=m.l+band*i+band/2;S('text',{class:'t-v',x:cx,y:v<0?Y(v)+13:Y(v)-5,'text-anchor':'middle'},s,o.fmt(v))});
+  o.vals.forEach((v,i)=>{const r=S('rect',{class:'hit',x:m.l+band*i,y:m.t,width:band,height:py},s);bind(r,p=>{bars[i]&&bars[i].classList.add('hot');showTip(`<div class="h">${o.cats[i]}</div>${row(o.name,v==null?'데이터 없음':o.fmt(v)+o.unit)}${o.extra?o.extra(i):''}<div class="f">${o.src}</div>`,p.x,p.y)},()=>bars[i]&&bars[i].classList.remove('hot'))});
+}
+
+function hbar(o){
+  const rh=31,top=o.refs?46:4,h=top+o.rows.length*rh+4,{s,W}=host(o.id,h),ml=o.ml||86,mr=o.mr||66,px=W-ml-mr;
+  const mx=o.max||Math.max(...o.rows.map(r=>r.v)),X=v=>ml+v/mx*px;
+  if(o.refs){let last=[-99,-99];o.refs.forEach(r=>{const x=X(r.v);const lane=x-last[0]>=78?0:1;last[lane]=x;S('line',{class:r.cls,x1:x,x2:x,y1:lane?34:17,y2:h-4},s);S('text',{class:r.cls==='ref-up'?'t-up':'t-v',x,y:lane?30:12,'text-anchor':'middle'},s,r.label)})}
+  o.rows.forEach((r,i)=>{const y=top+i*rh;S('text',{class:r.me?'t-b':'t-m',x:ml-8,y:y+16,'text-anchor':'end'},s,r.n);
+    const b=S('rect',{class:`bar ${r.cls||(r.me?'now':'')}`,x:ml,y:y+4,width:Math.max(X(r.v)-ml,2),height:17,rx:2.5},s);
+    S('text',{class:'t-v',x:X(r.v)+6,y:y+16},s,o.fmt(r.v));
+    const hit=S('rect',{class:'hit',x:0,y,width:W,height:rh},s);bind(hit,p=>{b.classList.add('hot');showTip(`<div class="h">${r.n}</div>${row(o.name,o.fmt(r.v))}${r.tip||''}<div class="f">${o.src}</div>`,p.x,p.y)},()=>b.classList.remove('hot'))});
+}
+
+function ladder(){
+  const R=[{n:"Series B",a:DATA.seriesB,note:"2025년 7월 상환전환우선주 613억, 무상증자 반영 환산"},{n:"Pre-IPO",a:DATA.preipo,note:"2026년 5월 보통주 500억, 무상증자 반영 환산"},{n:"희망 밴드",a:DATA.band[0],b:DATA.band[1],note:"증권신고서 제시 10,500~13,000원"},{n:"주관사 평가",a:DATA.fair,note:"2030년 추정 순이익 기반 주당 평가가액"}];
+  const rh=46,top=30,h=top+R.length*rh+22,{s,W}=host('c-ladder',h),ml=92,mr=22,px=W-ml-mr,lo=0,hi=20000,X=v=>ml+(v-lo)/(hi-lo)*px;
+  [0,5000,10000,15000,20000].forEach(v=>{S('line',{class:'grid',x1:X(v),x2:X(v),y1:top-4,y2:h-22},s);S('text',{class:'t',x:X(v),y:h-6,'text-anchor':v===0?'start':v===hi?'end':'middle'},s,v?krw(v):'0')});
+  R.forEach((r,i)=>{const y=top+i*rh;S('text',{class:'t-b',x:ml-10,y:y+17,'text-anchor':'end'},s,r.n);S('text',{class:'t',x:ml-10,y:y+33,'text-anchor':'end'},s,r.b?`${num(r.a)}~${num(r.b)}`:won(r.a));
+    const m=r.b?S('rect',{class:'bar alt',x:X(r.a),y:y+11,width:X(r.b)-X(r.a),height:20,rx:3},s):S('circle',{class:r.a<DATA.ipo?'f1':'f3',cx:X(r.a),cy:y+21,r:7},s);
+    const hit=S('rect',{class:'hit',x:0,y,width:W,height:rh},s);bind(hit,p=>showTip(`<div class="h">${r.n}</div>${row('주당 가격',r.b?num(r.a)+'~'+num(r.b)+'원':won(r.a))}${row('공모가 대비',r.b?sgn((r.a/DATA.ipo-1)*100,0)+'% ~ '+sgn((r.b/DATA.ipo-1)*100,0)+'%':sgn((r.a/DATA.ipo-1)*100,0)+'%')}<div class="f">${r.note}</div>`,p.x,p.y))});
+  S('line',{class:'ref-up',x1:X(DATA.ipo),x2:X(DATA.ipo),y1:top-6,y2:h-22},s);S('text',{class:'t-up',x:X(DATA.ipo),y:14,'text-anchor':'middle'},s,'공모가 8,000원');
+}
+
+function pipeChart(){
+  const st=['탐색','비임상','IND','1상','2상'],rh=32,top=26,h=top+DATA.pipe.length*rh+6,{s,W}=host('c-pipe',h),ml=80,mr=10,px=W-ml-mr,cw=px/st.length;
+  st.forEach((t,i)=>{if(i%2===0)S('rect',{class:'colband',x:ml+i*cw,y:top-4,width:cw,height:h-top},s);S('text',{class:'t',x:ml+i*cw+cw/2,y:14,'text-anchor':'middle'},s,t)});
+  DATA.pipe.forEach((p,i)=>{const y=top+i*rh;S('text',{class:'t-b',x:ml-8,y:y+16,'text-anchor':'end'},s,p.n);
+    const b=S('rect',{class:`bar ${p.s>=3?'now':''}`,x:ml+3,y:y+5,width:p.s*cw-6,height:16,rx:3},s);
+    if(p.t)S('text',{class:'t-m',x:ml+p.s*cw+4,y:y+17},s,p.t);
+    const hit=S('rect',{class:'hit',x:0,y,width:W,height:rh},s);bind(hit,q=>{b.classList.add('hot');showTip(`<div class="h">${p.n}</div>${row('단계',st[p.s-1]+(p.s===1?'(선도물질 최적화)':''))}<div class="f">${p.note}</div>`,q.x,q.y)},()=>b.classList.remove('hot'))});
+}
+
+const st={mode:'q'};
+function drawDist(){const tq=DATA.dist.reduce((a,b)=>a+b.q,0),tc=DATA.dist.reduce((a,b)=>a+b.c,0);
+  hbar({id:'c-dist',name:st.mode==='q'?'수량 비중':'건수 비중',max:60,fmt:v=>num(v,1)+'%',src:'수요예측 신청가격 분포',rows:DATA.dist.map(d=>({n:d.n,v:st.mode==='q'?d.q/tq*100:d.c/tc*100,cls:d.n==='하단 미만'?'down':d.n.includes('상단')?'up':'',tip:row('건수',num(d.c)+'곳')+row('수량',num(d.q)+'주')}))})}
+function drawAll(){
+  ladder();drawDist();
+  hbar({id:'c-type',name:'평균 신청가',max:14000,ml:112,mr:60,fmt:v=>won(v),src:'유형별 수량 가중 평균 신청가',refs:[{v:DATA.ipo,label:'공모가',cls:'ref-up'},{v:DATA.band[0],label:'밴드 하단',cls:'ref-d'}],rows:DATA.types.map(t=>({n:t.n,v:t.p,cls:t.f?'warm':'',tip:row('참여',num(t.c)+'곳')+row('신청 수량',num(t.q)+'주')}))});
+  const F=DATA.float;barChart({id:'c-float',h:240,cats:F.map(f=>f.n),vals:F.map(f=>f.cum),cls:i=>i===0?'up':i===1?'warm':'',name:'누적 유통가능',unit:'%',tickU:'%',fmt:v=>num(v,1),labels:F.map((f,i)=>i),src:'상장예정주식수 대비',extra:i=>row('새로 풀리는 주식',num(F[i].add)+'주')+row('공모가 기준 금액',num(F[i].add*DATA.ipo/1e8)+'억원')});
+  const Y=DATA.years,yc=i=>Y[i].est?'est':'now';
+  barChart({id:'c-rev',h:220,cats:Y.map(y=>y.y.replace('20','\'')),vals:Y.map(y=>y.rev),cls:yc,name:'매출',unit:'억',fmt:v=>num(v),labels:[1,7],src:'별도, 투자설명서',extra:i=>Y[i].note?`<div class="f">${Y[i].note}</div>`:''});
+  barChart({id:'c-op',h:220,cats:Y.map(y=>y.y.replace('20','\'')),vals:Y.map(y=>y.op),cls:i=>Y[i].est?'est':(Y[i].op<0?'down':'now'),name:'영업이익',unit:'억',fmt:v=>num(v),labels:[4,7],src:'별도, 투자설명서',extra:i=>Y[i].note?`<div class="f">${Y[i].note}</div>`:''});
+  hbar({id:'c-mix',name:'추정 매출 합계',ml:84,mr:60,fmt:v=>num(v)+'억',src:'2026~2030년 회사 추정 합계',rows:DATA.mix.map(m=>({n:m.n,v:m.v,me:m.me,cls:m.me?'now':'',tip:`<div class="f">${m.note}</div>`}))});
+  const C=DATA.cash;hbar({id:'c-cash',name:'금액',ml:112,mr:60,fmt:v=>num(v)+'억',src:'반기말 재무제표, 자금 사용계획',rows:[{n:'보유 현금성 자산',v:C.held,cls:'now',tip:'<div class="f">6월 말 현금 95억 + 단기금융상품 929억</div>'},{n:'공모 순수입',v:C.net,cls:'now'},{n:'합계',v:C.held+C.net,cls:'alt'},{n:'2027~29 계획 지출',v:C.spend,cls:'warm',tip:'<div class="f">연구개발비 1,141억 + 운영자금 136억</div>'}]});
+  pipeChart();
+}
+function tiles(){const B=DATA.book,mcap=DATA.shares*DATA.ipo/1e8;$('tiles').innerHTML=[[won(DATA.ipo),'확정 공모가, 밴드 하단 대비 '+sgn((DATA.ipo/DATA.band[0]-1)*100,0)+'%'],[`${num(mcap)}억`,'공모가 기준 시가총액'],[`${num(B.ratio,1)}:1`,'기관 유효 경쟁률'],[`${num(B.lock/B.inst*100,1)}%`,'기관 의무보유 확약'],[`${num(DATA.float[0].cum,1)}%`,'상장일 유통가능 물량']].map(t=>`<div class="tile"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}
+function stats(){const B=DATA.book,T=DATA.types,dom=T.filter(t=>!t.f),fo=T.filter(t=>t.f),avg=a=>a.reduce((x,t)=>x+t.p*t.q,0)/a.reduce((x,t)=>x+t.q,0);
+  $('book-stats').innerHTML=[[won(avg(dom)),'국내 기관 평균 신청가'],[won(avg(fo)),'해외 기관 평균 신청가'],[`${num(B.retailRatio,1)}:1`,`일반청약 경쟁률, 증거금 ${num(B.deposit)}억`],[`${num(B.equalShort)}주`,'균등배정 미납으로 비례 전환']].map(t=>`<div class="stat"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}
+function steps(){$('val-steps').innerHTML=DATA.steps.map(s=>`<li><b>${s[1]}</b><span>${s[0]}</span></li>`).join('')+`<li><b>${num(DATA.shares*DATA.ipo/1e8/428.39,1)}배</b><span>공모가 시가총액 ÷ 할인된 2030년 순이익(자체 계산)</span></li>`}
+const C=DATA.cash;$('cash-cap').textContent=`보유와 공모 순수입 합계 ${num(C.held+C.net)}억이 계획 지출 ${num(C.spend)}억보다 ${num(C.held+C.net-C.spend)}억 많습니다. 하반기 추정 손실 ${num(C.h2loss)}억을 빼면 차이는 ${num(C.held+C.net-C.spend-C.h2loss)}억입니다.`;
+const KEY=[["확정 공모가","8,000원","희망밴드 10,500~13,000원"],["공모 주식수","5,000,000주","주관사 의무인수·취득 175,000주 별도"],["공모 금액","400억원","순수입 394억원, 전액 운영자금(연구개발)"],["상장예정주식수","45,845,239주","공모 전 40,670,239주"],["공모가 기준 시가총액",num(DATA.shares*DATA.ipo/1e8)+"억원","자체 계산"],["수요예측 참여","506곳 / 2억 4,969만 주","유효 412곳, 60.61:1"],["의무보유 확약","162,000주(4.3%)","3개월 7,000주, 15일 155,000주"],["일반청약 경쟁률","13.26:1","청약 1,657.7만 주, 증거금 663억원"],["최대주주등 지분","13.91%","윤경완 대표 12.37%, 공동창업자 김태우 9.02%"],["의결권 공동행사","27.63%","최대주주 등 9인 3년 보호예수 포함"],["Pre-IPO 단가(환산)",won(DATA.preipo),"2026년 5월, 522,500원 ÷ 53"],["Series B 단가(환산)",won(DATA.seriesB),"2025년 7월, 261,730원 ÷ 53"],["반기말 현금성 자산","1,024억원","현금 95억 + 단기금융상품 929억"],["비교기업","유한양행·한미약품·종근당·HK이노엔","PER 23.6·29.1·11.1·12.9배, 평균 19.15배"]];
+const KCOL=[{h:'항목',f:r=>r[0],v:r=>r[0]},{h:'값',f:r=>r[1],v:r=>r[1]},{h:'비고',f:r=>r[2],v:r=>r[2]}];
+function table(id,cols,rows){const t=$(id);let sk=-1,dir=1,data=rows.slice();const paint=()=>{t.innerHTML=`<thead><tr>${cols.map((c,i)=>`<th aria-sort="${i===sk?(dir>0?'ascending':'descending'):'none'}"><button type="button" data-i="${i}">${c.h}${i===sk?(dir>0?' ▲':' ▼'):''}</button></th>`).join('')}</tr></thead><tbody>${data.map(r=>`<tr>${cols.map(c=>`<td style="white-space:normal">${c.f(r)}</td>`).join('')}</tr>`).join('')}</tbody>`;t.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(sk===i)dir=-dir;else{sk=i;dir=1}data=rows.slice().sort((a,b)=>(cols[i].v(a)>cols[i].v(b)?1:-1)*dir);paint()})};paint()}
+function copyCsv(btn){const q=s=>`"${String(s).replace(/"/g,'""')}"`,csv=[KCOL.map(c=>q(c.h)).join(','),...KEY.map(r=>r.map(q).join(','))].join('\n');const old=btn.textContent,ok=()=>{btn.textContent='복사됨';setTimeout(()=>btn.textContent=old,1500)};const fb=()=>{const ta=document.createElement('textarea');ta.value=csv;btn.parentNode.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(_){btn.textContent='아래 칸에서 복사하세요';return}ta.remove()};navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(csv).then(ok,fb):fb()}
+function modes(){const c=$('dist-mode');[['q','수량 기준'],['c','건수 기준']].forEach(([v,l])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=l;b.setAttribute('aria-pressed',st.mode===v);b.onclick=()=>{st.mode=v;[...c.children].forEach(x=>x.setAttribute('aria-pressed',x===b));drawDist()};c.appendChild(b)})}
+const isDark=()=>{const a=document.documentElement.getAttribute('data-theme');if(a==='dark')return true;if(a==='light')return false;return matchMedia('(prefers-color-scheme: dark)').matches};
+const themeLabel=()=>{$('theme').textContent=isDark()?'라이트 모드':'다크 모드'};
+$('theme').onclick=()=>{document.documentElement.setAttribute('data-theme',isDark()?'light':'dark');themeLabel()};
+new MutationObserver(themeLabel).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',themeLabel);
+tiles();stats();steps();modes();themeLabel();drawAll();table('t-key',KCOL,KEY);$('csv').onclick=e=>copyCsv(e.target);
+let rw=innerWidth,rt;addEventListener('resize',()=>{if(innerWidth===rw)return;rw=innerWidth;clearTimeout(rt);rt=setTimeout(drawAll,120)});
+</script>
+</body>
+</html>
